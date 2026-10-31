@@ -2,18 +2,18 @@
 % Please edit documentation in R/repos.R
 \name{kitverse_repos}
 \alias{kitverse_repos}
-\title{安裝套件用的套件庫}
+\title{The repositories packages are installed from}
 \usage{
 kitverse_repos()
 }
 \value{
-具名的網址向量，可以直接給 \code{install.packages(repos = )}。
+A named vector of URLs, ready for \code{install.packages(repos = )}.
 }
 \description{
-KIT 的套件從 r-universe（\verb{https://jiewentsai.r-universe.dev}），其他套件從 CRAN；
-在 Ubuntu 與 Debian 上，CRAN 換成 Posit Package Manager 編好的版本。
-用 \code{options(kitverse.repo = )} 可以換掉 r-universe（例如工作坊現場的離線套件庫），
-用 \code{options(kitverse.cran = )} 可以換掉 CRAN。
+The KIT packages come from r-universe (\verb{https://jiewentsai.r-universe.dev}), everything else
+from CRAN; on Ubuntu and Debian, CRAN is replaced by Posit Package Manager's pre-built packages.
+\code{options(kitverse.repo = )} replaces r-universe (for example with an offline repository at
+the workshop), and \code{options(kitverse.cran = )} replaces CRAN.
 }
 \examples{
 kitverse_repos()

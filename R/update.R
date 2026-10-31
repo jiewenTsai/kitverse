@@ -1,21 +1,27 @@
-# 安裝缺少的、更新太舊的套件
+# Install missing packages and update packages that are too old
 #
-# install.packages() 只裝沒有的套件，不會更新已經裝了但太舊的（例如 bslib 0.10 沒有
-# Brite 主題，kitsUI 一打開就壞掉）。這裡照 kitverse_requirements() 找出沒裝或太舊的，
-# 在另一個 R 裡安裝：Windows 上載入中的套件不能覆蓋，另一個 R 沒有載入任何套件。
+# install.packages() installs only missing packages; it does not update one that is installed
+# but too old (for example bslib 0.10 has no Brite theme, and kitsUI breaks as soon as it
+# opens). This finds what is missing or too old with kitverse_requirements() and installs it
+# in a separate R: on Windows a loaded package cannot be overwritten, and the other R has
+# nothing loaded.
 
-#' 安裝缺少的、更新太舊的套件
+#' Install missing packages and update packages that are too old
 #'
-#' 找出 kitverse 需要、但沒有安裝或版本太舊的套件（[kitverse_requirements()]），
-#' 從 [kitverse_repos()] 安裝。新裝的套件可能又需要別的套件，所以會重複到沒有缺的為止
-#' （最多 `rounds` 次）。安裝在另一個 R 程序裡進行，現在這個 R 載入了什麼都沒關係。
+#' Finds the packages kitverse needs that are not installed or older than required
+#' ([kitverse_requirements()]) and installs them from [kitverse_repos()]. A newly installed
+#' package may need further packages, so this repeats until nothing is missing (at most
+#' `rounds` times). The installation runs in a separate R process, so it does not matter what
+#' the current R session has loaded.
 #'
-#' 剛裝好的 R 還沒有個人的套件資料夾，這裡會先建立（`R_LIBS_USER`）。
+#' A freshly installed R has no personal package library yet; this creates it first
+#' (`R_LIBS_USER`).
 #'
-#' @param all `TRUE` 時，套件庫有新版的也一起更新（不只是太舊的）。
-#' @param rounds 最多重複幾次。
-#' @param quiet `TRUE` 時不印安裝過程。
-#' @return 裝了或更新了哪些套件（invisible）。
+#' @param all `TRUE` to also update packages that have a newer version in the repositories
+#'   (not only those that are too old).
+#' @param rounds At most how many rounds.
+#' @param quiet `TRUE` to hide the installation output.
+#' @return The packages installed or updated (invisibly).
 #' @examples
 #' if (interactive()) kitverse_update()
 #' @export
@@ -27,34 +33,30 @@ kitverse_update <- function(all = FALSE, rounds = 4, quiet = FALSE) {
     req <- kitverse_requirements()
     todo <- req$pkg[!req$ok]
     if (all && i == 1) {
-      # 套件庫有新版的（包括 kitverse 自己）
+      # Packages with a newer version in the repositories (kitverse itself too)
       old <- tryCatch(rownames(utils::old.packages(repos = repos)), error = function(e) NULL)
       todo <- union(todo, intersect(old, c(req$pkg, "kitverse")))
     }
     todo <- setdiff(todo, done)
     if (length(todo) == 0) break
-    # 原文：正在安裝或更新  |  個套件： | 、
-    kv_say("\u6b63\u5728\u5b89\u88dd\u6216\u66f4\u65b0 ", length(todo), " \u500b\u5957\u4ef6\uff1a", paste(todo, collapse = "\u3001"))
-    # 原文：（第一次可能要幾分鐘，請不要關掉 R）
-    kv_say("\uff08\u7b2c\u4e00\u6b21\u53ef\u80fd\u8981\u5e7e\u5206\u9418\uff0c\u8acb\u4e0d\u8981\u95dc\u6389 R\uff09")
+    kv_say("Installing or updating ", length(todo), " package", if (length(todo) > 1) "s",
+           ": ", paste(todo, collapse = ", "))
+    kv_say("(the first time can take a few minutes; please keep R open)")
     kv_install(todo, lib = lib, repos = repos, quiet = quiet)
     done <- c(done, todo)
   }
   req <- kitverse_requirements()
   if (all(req$ok)) {
-    # 原文：✓ 套件都裝好了。下一步：kitverse::kitverse_check()
-    kv_say("\u2713 \u5957\u4ef6\u90fd\u88dd\u597d\u4e86\u3002\u4e0b\u4e00\u6b65\uff1akitverse::kitverse_check()")
+    kv_say("\u2714 All packages are installed. Next: kitverse::kitverse_check()")
   } else {
     bad <- req[!req$ok, , drop = FALSE]
-    # 原文：✗ 還有套件不能用： | ： | ；
-    kv_say("\u2717 \u9084\u6709\u5957\u4ef6\u4e0d\u80fd\u7528\uff1a", paste0(bad$pkg, "\uff1a", bad$why, collapse = "\uff1b"))
-    # 原文：  請確認電腦連上網路後再執行一次 kitverse::kitverse_update()。
-    kv_say("  \u8acb\u78ba\u8a8d\u96fb\u8166\u9023\u4e0a\u7db2\u8def\u5f8c\u518d\u57f7\u884c\u4e00\u6b21 kitverse::kitverse_update()\u3002")
+    kv_say("\u2716 Some packages still cannot be used: ", paste(bad$pkg, bad$why, collapse = "; "))
+    kv_say("  Check the internet connection and run kitverse::kitverse_update() again.")
   }
   invisible(done)
 }
 
-#' 個人的套件資料夾：沒有就建立，放到搜尋路徑最前面
+#' The personal package library: create it if needed and put it first on the library path
 #' @noRd
 kv_user_library <- function() {
   lib <- Sys.getenv("R_LIBS_USER")
@@ -66,13 +68,13 @@ kv_user_library <- function() {
   lib
 }
 
-#' 在另一個 R 裡執行 install.packages()
+#' Run install.packages() in a separate R
 #' @noRd
 kv_install <- function(pkgs, lib, repos, quiet = FALSE) {
   script <- tempfile("kitverse-install-", fileext = ".R")
   on.exit(unlink(script), add = TRUE)
   writeLines(c(
-    # Posit Package Manager 看 user agent 決定給哪個 R 版本的 binary
+    # Posit Package Manager picks the binary for this R version from the user agent
     'options(HTTPUserAgent = sprintf("R/%s R (%s)", getRversion(), paste(getRversion(), R.version[["platform"]], R.version[["arch"]], R.version[["os"]])))',
     sprintf("options(repos = %s)", kv_deparse(repos)),
     sprintf(".libPaths(c(%s, .libPaths()))", kv_deparse(lib)),
@@ -80,22 +82,21 @@ kv_install <- function(pkgs, lib, repos, quiet = FALSE) {
             kv_deparse(pkgs), kv_deparse(lib), if (quiet) "TRUE" else "FALSE")
   ), script)
   status <- system2(kv_rscript(), shQuote(script))
-  # 原文：（安裝程式結束時回報了錯誤，下面再檢查一次）
-  if (!identical(status, 0L)) kv_say("\uff08\u5b89\u88dd\u7a0b\u5f0f\u7d50\u675f\u6642\u56de\u5831\u4e86\u932f\u8aa4\uff0c\u4e0b\u9762\u518d\u6aa2\u67e5\u4e00\u6b21\uff09")
+  if (!identical(status, 0L)) kv_say("(the installer reported an error; checking again below)")
   invisible(status)
 }
 
-#' 字串變成 R 程式碼（給另一個 R 執行的腳本用）
+#' A value as R code (for the script the other R runs)
 #' @noRd
 kv_deparse <- function(x) paste(deparse(x, width.cutoff = 500L), collapse = " ")
 
-#' 這個 R 的 Rscript
+#' This R's Rscript
 #' @noRd
 kv_rscript <- function() {
   exe <- if (.Platform$OS.type == "windows") "Rscript.exe" else "Rscript"
   file.path(R.home("bin"), exe)
 }
 
-#' 印一行訊息（message()，可以用 suppressMessages() 關掉）
+#' Print one line (message(), so suppressMessages() can hide it)
 #' @noRd
 kv_say <- function(...) message(paste0(...))

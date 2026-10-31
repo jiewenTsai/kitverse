@@ -2,23 +2,25 @@
 % Please edit documentation in R/requirements.R
 \name{kitverse_requirements}
 \alias{kitverse_requirements}
-\title{kitverse 要的所有套件}
+\title{All packages kitverse needs}
 \usage{
 kitverse_requirements(roots = "kitverse", lib.loc = NULL)
 }
 \arguments{
-\item{roots}{從哪些套件開始找。}
+\item{roots}{The packages to start from.}
 
-\item{lib.loc}{套件資料夾（預設是 \code{.libPaths()}）。}
+\item{lib.loc}{Package libraries (default \code{.libPaths()}).}
 }
 \value{
-data.frame：\code{pkg}（套件）、\code{min}（最低版本，沒有要求時 NA）、\code{have}（裝的版本，
-沒裝時 NA）、\code{ok}（有裝且版本夠新）、\code{why}（不 ok 的原因）。
+A data frame: \code{pkg}, \code{min} (minimum version, NA when none), \code{have} (installed version,
+NA when not installed), \code{ok} (installed and new enough), \code{why} (the reason when not ok).
 }
 \description{
-從 \code{roots}（預設是 kitverse 自己）出發，讀已經裝好的套件的 DESCRIPTION，找出所有
-直接與間接需要的套件、被要求的最低版本、裝了的版本。沒有裝的套件讀不到它的
-DESCRIPTION，它底下的套件要等它裝好才看得到（\code{\link[=kitverse_update]{kitverse_update()}} 會一直重複到沒有缺的）。
+Starting from \code{roots} (kitverse itself by default), reads the DESCRIPTION of the installed
+packages and finds every package needed directly or indirectly, the minimum version required,
+and the installed version. A package that is not installed has no DESCRIPTION to read, so the
+packages below it show up only after it is installed (\code{\link[=kitverse_update]{kitverse_update()}} repeats until nothing
+is missing).
 }
 \examples{
 req <- kitverse_requirements()

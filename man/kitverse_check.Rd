@@ -2,22 +2,24 @@
 % Please edit documentation in R/check.R
 \name{kitverse_check}
 \alias{kitverse_check}
-\title{檢查這台電腦能不能用 KIT 的工具}
+\title{Check whether this computer can run the KIT tools}
 \usage{
 kitverse_check(apps = TRUE, timeout = 120)
 }
 \arguments{
-\item{apps}{\code{TRUE} 時把 app 真的開起來試（每個約 5–30 秒）。}
+\item{apps}{\code{TRUE} to really start the apps (about 5–30 seconds each).}
 
-\item{timeout}{每個 app 最多等幾秒。}
+\item{timeout}{How many seconds to wait for each app.}
 }
 \value{
-data.frame（invisible）：\code{item}、\code{status}（\code{"ok"}、\code{"fail"}、\code{"note"}）、\code{detail}。
+A data frame (invisibly): \code{item}, \code{status} (\code{"ok"}, \code{"fail"}, \code{"note"}), \code{detail}.
 }
 \description{
-一項一行：R 的版本、個人套件資料夾能不能寫、每個套件有沒有裝、版本夠不夠新、
-套件載不載得起來、暫存資料夾、字型要用的網路，最後把 kitsUI 與 kitJoin 真的開起來
-（在另一個 R 裡、不開瀏覽器）確認網頁回得來。工作坊前請學員執行一次，把結果截圖給助教。
+One line per item: the R version, whether the package library is writable, whether every
+package is installed and new enough, whether the packages load, the Linux system libraries,
+the temporary folder, and the internet connection used for fonts. Finally it really starts
+kitsUI and kitJoin (in a separate R, without a browser) and checks that each page comes back.
+Ask workshop participants to run it once beforehand and send a screenshot.
 }
 \examples{
 if (interactive()) kitverse_check()

@@ -1,18 +1,18 @@
-# 從哪裡裝：KIT 的套件從 r-universe，其他從 CRAN
+# Where to install from: the KIT packages from r-universe, everything else from CRAN
 #
-# r-universe 是像 CRAN 一樣的套件庫，有 Windows 與 macOS 編好的版本，而且不經過 GitHub API
-# （80 人在同一個會場用 remotes::install_github() 時，GitHub 每小時 60 次的限制會被用完）。
-# Linux 的 CRAN 沒有編好的版本，從原始碼編 RTMB 要十幾分鐘：Ubuntu／Debian 改用
-# Posit Package Manager 的 binary。
+# r-universe is a CRAN-like repository with pre-built Windows and macOS packages, and it does not
+# go through the GitHub API (with 80 people in one room, remotes::install_github() runs into
+# GitHub's limit of 60 requests per hour). CRAN has no Linux binaries, and building RTMB from
+# source takes over ten minutes, so Ubuntu and Debian use Posit Package Manager's binaries.
 
-#' 安裝套件用的套件庫
+#' The repositories packages are installed from
 #'
-#' KIT 的套件從 r-universe（`https://jiewentsai.r-universe.dev`），其他套件從 CRAN；
-#' 在 Ubuntu 與 Debian 上，CRAN 換成 Posit Package Manager 編好的版本。
-#' 用 `options(kitverse.repo = )` 可以換掉 r-universe（例如工作坊現場的離線套件庫），
-#' 用 `options(kitverse.cran = )` 可以換掉 CRAN。
+#' The KIT packages come from r-universe (`https://jiewentsai.r-universe.dev`), everything else
+#' from CRAN; on Ubuntu and Debian, CRAN is replaced by Posit Package Manager's pre-built packages.
+#' `options(kitverse.repo = )` replaces r-universe (for example with an offline repository at
+#' the workshop), and `options(kitverse.cran = )` replaces CRAN.
 #'
-#' @return 具名的網址向量，可以直接給 `install.packages(repos = )`。
+#' @return A named vector of URLs, ready for `install.packages(repos = )`.
 #' @examples
 #' kitverse_repos()
 #' @export
@@ -22,7 +22,7 @@ kitverse_repos <- function() {
   c(kitverse = kit, CRAN = cran)
 }
 
-#' 預設的 CRAN：Ubuntu／Debian 用 Posit Package Manager 的 binary，其他用 CRAN
+#' The default CRAN: Posit Package Manager binaries on Ubuntu/Debian, CRAN elsewhere
 #' @noRd
 kv_default_cran <- function(os_release = "/etc/os-release") {
   cran <- "https://cloud.r-project.org"

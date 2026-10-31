@@ -1,14 +1,17 @@
-# kitverse 一行安裝：打開 R，貼上這一行
+# Install kitverse with one line: open R and paste
 #
 #   source("https://raw.githubusercontent.com/jiewenTsai/kitverse/main/install.R")
 #
-# 做三件事：
-# 1. 建立個人的套件資料夾（剛裝好的 R 沒有，install.packages() 會跳出問題或失敗）；
-# 2. 從 r-universe 安裝 kitverse 和所有需要的套件（Windows、macOS 是編好的版本，
-#    不用 Rtools 或 Xcode；Ubuntu／Debian 從 Posit Package Manager 拿編好的版本）；
-# 3. 更新已經裝了但太舊的套件，再檢查一次這台電腦（會把 kitsUI、kitJoin 真的開起來試）。
+# It does three things:
+# 1. creates the personal package library (a freshly installed R has none, and
+#    install.packages() then asks questions or fails);
+# 2. installs kitverse and every package it needs from r-universe (pre-built on Windows and
+#    macOS, so no Rtools or Xcode; on Ubuntu/Debian, pre-built from Posit Package Manager);
+# 3. updates packages that are installed but too old, then checks this computer (it really
+#    starts kitsUI and kitJoin).
 #
-# 工作坊現場的離線套件庫：先 Sys.setenv(KITVERSE_REPO = "file:///…")，再 source() 這個檔。
+# Offline repository at the workshop: Sys.setenv(KITVERSE_REPO = "file:///...",
+# KITVERSE_CRAN = "file:///...") first, then source() this file.
 local({
   kit <- Sys.getenv("KITVERSE_REPO", "https://jiewentsai.r-universe.dev")
   cran <- Sys.getenv("KITVERSE_CRAN", "https://cloud.r-project.org")
@@ -24,7 +27,7 @@ local({
   repos <- c(kitverse = kit, CRAN = cran)
   options(
     repos = repos, kitverse.repo = kit, kitverse.cran = cran,
-    # Posit Package Manager 看 user agent 決定給哪個 R 版本的 binary
+    # Posit Package Manager picks the binary for this R version from the user agent
     HTTPUserAgent = sprintf("R/%s R (%s)", getRversion(),
       paste(getRversion(), R.version[["platform"]], R.version[["arch"]], R.version[["os"]]))
   )
@@ -36,14 +39,14 @@ local({
   }
   lib <- .libPaths()[1]
 
-  message("== 1/3 安裝 kitverse（第一次約 3–10 分鐘，請不要關掉 R）")
+  message("== 1/3 Installing kitverse (the first time takes about 3-10 minutes; please keep R open)")
   install.packages("kitverse", lib = lib, repos = repos)
   if (!requireNamespace("kitverse", quietly = TRUE)) {
-    stop("kitverse 沒有裝好。請確認電腦連上網路，再貼一次這一行；還是不行請截圖給助教。",
-         call. = FALSE)
+    stop("kitverse was not installed. Check the internet connection and paste the line again; ",
+         "if it still fails, send a screenshot to the workshop assistants.", call. = FALSE)
   }
-  message("== 2/3 更新太舊的套件")
+  message("== 2/3 Updating packages that are too old")
   kitverse::kitverse_update()
-  message("== 3/3 檢查這台電腦")
+  message("== 3/3 Checking this computer")
   kitverse::kitverse_check()
 })

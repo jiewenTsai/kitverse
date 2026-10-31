@@ -1,36 +1,37 @@
-# 檢查這台電腦能不能用 KIT 的工具
+# Check whether this computer can run the KIT tools
 #
-# 一項一行，✓ 是好的、✗ 要處理、! 可以用但要知道。最後一項真的把每個 app 開起來
-# （在另一個 R 裡，不開瀏覽器），確認網頁回得來，再關掉。
+# One item per line: ✔ fine, ✖ needs fixing, ! works but worth knowing. The last items
+# really start each app (in a separate R, no browser), wait for the page, then stop it.
 
-#' 檢查這台電腦能不能用 KIT 的工具
+#' Check whether this computer can run the KIT tools
 #'
-#' 一項一行：R 的版本、個人套件資料夾能不能寫、每個套件有沒有裝、版本夠不夠新、
-#' 套件載不載得起來、暫存資料夾、字型要用的網路，最後把 kitsUI 與 kitJoin 真的開起來
-#' （在另一個 R 裡、不開瀏覽器）確認網頁回得來。工作坊前請學員執行一次，把結果截圖給助教。
+#' One line per item: the R version, whether the package library is writable, whether every
+#' package is installed and new enough, whether the packages load, the Linux system libraries,
+#' the temporary folder, and the internet connection used for fonts. Finally it really starts
+#' kitsUI and kitJoin (in a separate R, without a browser) and checks that each page comes back.
+#' Ask workshop participants to run it once beforehand and send a screenshot.
 #'
-#' @param apps `TRUE` 時把 app 真的開起來試（每個約 5–30 秒）。
-#' @param timeout 每個 app 最多等幾秒。
-#' @return data.frame（invisible）：`item`、`status`（`"ok"`、`"fail"`、`"note"`）、`detail`。
+#' @param apps `TRUE` to really start the apps (about 5–30 seconds each).
+#' @param timeout How many seconds to wait for each app.
+#' @return A data frame (invisibly): `item`, `status` (`"ok"`, `"fail"`, `"note"`), `detail`.
 #' @examples
 #' if (interactive()) kitverse_check()
 #' @export
 kitverse_check <- function(apps = TRUE, timeout = 120) {
   res <- kv_check_items()
-  # 原文：套件版本 | 套件載入
-  if (apps && all(res$status[res$item %in% c("\u5957\u4ef6\u7248\u672c", "\u5957\u4ef6\u8f09\u5165")] == "ok")) {
+  if (apps && all(res$status[res$item %in% c("Package versions", "Package loading")] == "ok")) {
     for (app in kv_apps()) {
       res <- rbind(res, kv_check_app(app, timeout = timeout))
     }
   } else if (apps) {
-    # 原文：開啟 app | 套件有問題，先執行 kitverse::kitverse_update()
-    res <- rbind(res, kv_item("\u958b\u555f app", "fail", "\u5957\u4ef6\u6709\u554f\u984c\uff0c\u5148\u57f7\u884c kitverse::kitverse_update()"))
+    res <- rbind(res, kv_item("Start apps", "fail",
+                              "packages have problems; run kitverse::kitverse_update() first"))
   }
   kv_print_check(res)
   invisible(res)
 }
 
-#' 兩個 app：名稱、套件、啟動函式
+#' The two apps: name, package, launcher
 #' @noRd
 kv_apps <- function() {
   list(
@@ -39,79 +40,69 @@ kv_apps <- function() {
   )
 }
 
-#' 一列檢查結果
+#' One row of check results
 #' @noRd
 kv_item <- function(item, status, detail) {
   data.frame(item = item, status = status, detail = detail, stringsAsFactors = FALSE)
 }
 
-#' 不用開 app 的檢查
+#' The checks that do not start an app
 #' @noRd
 kv_check_items <- function(req = kitverse_requirements()) {
   out <- list()
-  # R 的版本：套件要 4.1 以上；Windows 上 4.2 起才全面用 UTF-8（中文檔名、中文欄名）
+  # R: the packages need 4.1 or later; on Windows, R uses UTF-8 everywhere only from 4.2
+  # (Chinese file names and column names)
   rv <- getRversion()
   out[[length(out) + 1]] <- if (rv < "4.1.0") {
-    # 原文：：太舊，請裝最新版的 R（https://cran.r-project.org）
-    kv_item("R", "fail", paste0(rv, "\uff1a\u592a\u820a\uff0c\u8acb\u88dd\u6700\u65b0\u7248\u7684 R\uff08https://cran.r-project.org\uff09"))
+    kv_item("R", "fail", paste0(rv, ": too old; install the latest R from https://cran.r-project.org"))
   } else if (.Platform$OS.type == "windows" && rv < "4.2.0") {
-    # 原文：：可以用，但中文檔名可能有問題；建議裝最新版的 R
-    kv_item("R", "note", paste0(rv, "\uff1a\u53ef\u4ee5\u7528\uff0c\u4f46\u4e2d\u6587\u6a94\u540d\u53ef\u80fd\u6709\u554f\u984c\uff1b\u5efa\u8b70\u88dd\u6700\u65b0\u7248\u7684 R"))
+    kv_item("R", "note", paste0(rv, ": works, but Chinese file names may break; the latest R is recommended"))
   } else {
     kv_item("R", "ok", as.character(rv))
   }
 
   lib <- .libPaths()[1]
   out[[length(out) + 1]] <- if (file.access(lib, 2) == 0) {
-    # 原文：套件資料夾
-    kv_item("\u5957\u4ef6\u8cc7\u6599\u593e", "ok", lib)
+    kv_item("Package library", "ok", lib)
   } else {
-    # 原文：套件資料夾 | ：不能寫入；執行 kitverse::kitverse_update() 會建立個人的套件資料夾
-    kv_item("\u5957\u4ef6\u8cc7\u6599\u593e", "fail", paste0(lib, "\uff1a\u4e0d\u80fd\u5beb\u5165\uff1b\u57f7\u884c kitverse::kitverse_update() \u6703\u5efa\u7acb\u500b\u4eba\u7684\u5957\u4ef6\u8cc7\u6599\u593e"))
+    kv_item("Package library", "fail",
+            paste0(lib, ": not writable; kitverse::kitverse_update() creates a personal library"))
   }
 
   bad <- req[!req$ok, , drop = FALSE]
   out[[length(out) + 1]] <- if (nrow(bad) == 0) {
-    # 原文：套件版本 |  個套件都裝了，版本也夠新
-    kv_item("\u5957\u4ef6\u7248\u672c", "ok", paste0(nrow(req), " \u500b\u5957\u4ef6\u90fd\u88dd\u4e86\uff0c\u7248\u672c\u4e5f\u5920\u65b0"))
+    kv_item("Package versions", "ok", paste0("all ", nrow(req), " packages installed and new enough"))
   } else {
-    # 原文：套件版本 | ： | ；
-    kv_item("\u5957\u4ef6\u7248\u672c", "fail", paste0(paste0(bad$pkg, "\uff1a", bad$why, collapse = "\uff1b"),
-                                   # 原文：\n    → 執行 kitverse::kitverse_update()
-                                   "\n    \u2192 \u57f7\u884c kitverse::kitverse_update()"))
+    kv_item("Package versions", "fail",
+            paste0(paste0(bad$pkg, " ", bad$why, collapse = "; "),
+                   "\n    \u2192 run kitverse::kitverse_update()"))
   }
 
-  # 主要套件載不載得起來（在另一個 R 裡：這裡載入失敗會留下壞掉的狀態）
-  main <- c("kits", "kitDesign", "kitsUI", "kitJoin")
+  # Load the core packages in a separate R: a failed load here would leave this session broken
+  main <- kv_core()
   out[[length(out) + 1]] <- if (nrow(bad) > 0) {
-    # 原文：套件載入 | 先處理上面的套件版本
-    kv_item("\u5957\u4ef6\u8f09\u5165", "fail", "\u5148\u8655\u7406\u4e0a\u9762\u7684\u5957\u4ef6\u7248\u672c")
+    kv_item("Package loading", "fail", "fix the package versions above first")
   } else {
     err <- kv_try_load(main)
     if (length(err) == 0) {
-      # 原文：套件載入 | 、
-      kv_item("\u5957\u4ef6\u8f09\u5165", "ok", paste0(main, " ", vapply(main, kv_installed_version, ""), collapse = "\u3001"))
+      kv_item("Package loading", "ok",
+              paste(main, vapply(main, kv_installed_version, ""), collapse = ", "))
     } else {
-      # 原文：套件載入
-      kv_item("\u5957\u4ef6\u8f09\u5165", "fail", paste(err, collapse = "\n    "))
+      kv_item("Package loading", "fail", paste(err, collapse = "\n    "))
     }
   }
 
-  # Linux：套件編好的 .so 要的系統函式庫（例如 fs 要 libuv.so.1）。少了的話套件載得起來，
-  # 要等 app 畫頁面、用到那個套件時才出錯
+  # Linux: system libraries the compiled packages need (for example fs needs libuv.so.1).
+  # Without them the packages still load, and the app fails only when it draws the page.
   if (Sys.info()[["sysname"]] == "Linux") {
     miss <- kv_missing_syslibs(req$pkg)
     out[[length(out) + 1]] <- if (length(miss) == 0) {
-      # 原文：系統函式庫 | 套件需要的都有
-      kv_item("\u7cfb\u7d71\u51fd\u5f0f\u5eab", "ok", "\u5957\u4ef6\u9700\u8981\u7684\u90fd\u6709")
+      kv_item("System libraries", "ok", "everything the packages need is there")
     } else {
-      apt <- kv_apt_name(miss)
-      # 原文：系統函式庫
-      kv_item("\u7cfb\u7d71\u51fd\u5f0f\u5eab", "fail", paste0(
-        # 原文：缺少  | 、 | （ | 、
-        "\u7f3a\u5c11 ", paste(names(miss), collapse = "\u3001"), "\uff08", paste(unique(unlist(miss)), collapse = "\u3001"),
-        # 原文： 要用）\n    → 在終端機執行：sudo apt install 
-        " \u8981\u7528\uff09\n    \u2192 \u5728\u7d42\u7aef\u6a5f\u57f7\u884c\uff1asudo apt install ", paste(apt, collapse = " ")))
+      kv_item("System libraries", "fail", paste0(
+        "missing ", paste(names(miss), collapse = ", "), " (needed by ",
+        paste(unique(unlist(miss)), collapse = ", "), ")\n    \u2192 in a terminal: sudo apt install ",
+        paste(kv_apt_name(miss), collapse = " ")))
     }
   }
 
@@ -120,29 +111,27 @@ kv_check_items <- function(req = kitverse_requirements()) {
   ok_tmp <- tryCatch({ writeLines("ok", probe); unlink(probe); TRUE }, error = function(e) FALSE,
                      warning = function(w) FALSE)
   out[[length(out) + 1]] <- if (!ok_tmp) {
-    # 原文：暫存資料夾 | ：不能寫入（上傳的檔案與下載的結果都放在這裡）
-    kv_item("\u66ab\u5b58\u8cc7\u6599\u593e", "fail", paste0(tmp, "\uff1a\u4e0d\u80fd\u5beb\u5165\uff08\u4e0a\u50b3\u7684\u6a94\u6848\u8207\u4e0b\u8f09\u7684\u7d50\u679c\u90fd\u653e\u5728\u9019\u88e1\uff09"))
+    kv_item("Temporary folder", "fail",
+            paste0(tmp, ": not writable (uploaded files and results are kept here)"))
   } else if (.Platform$OS.type == "windows" && grepl("[^\\x01-\\x7F]", tmp, perl = TRUE)) {
-    # 原文：暫存資料夾 | ：路徑裡有中文；如果上傳或下載出錯，請告訴助教
-    kv_item("\u66ab\u5b58\u8cc7\u6599\u593e", "note", paste0(tmp, "\uff1a\u8def\u5f91\u88e1\u6709\u4e2d\u6587\uff1b\u5982\u679c\u4e0a\u50b3\u6216\u4e0b\u8f09\u51fa\u932f\uff0c\u8acb\u544a\u8a34\u52a9\u6559"))
+    kv_item("Temporary folder", "note",
+            paste0(tmp, ": the path has non-ASCII characters; tell the assistants if uploads or downloads fail"))
   } else {
-    # 原文：暫存資料夾
-    kv_item("\u66ab\u5b58\u8cc7\u6599\u593e", "ok", tmp)
+    kv_item("Temporary folder", "ok", tmp)
   }
 
   out[[length(out) + 1]] <- if (kv_online("https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC")) {
-    # 原文：網路（字型） | 連得到 Google Fonts
-    kv_item("\u7db2\u8def\uff08\u5b57\u578b\uff09", "ok", "\u9023\u5f97\u5230 Google Fonts")
+    kv_item("Internet (fonts)", "ok", "Google Fonts reachable")
   } else {
-    # 原文：網路（字型） | 連不到 Google Fonts：app 可以用，但字型會是電腦內建的
-    kv_item("\u7db2\u8def\uff08\u5b57\u578b\uff09", "note", "\u9023\u4e0d\u5230 Google Fonts\uff1aapp \u53ef\u4ee5\u7528\uff0c\u4f46\u5b57\u578b\u6703\u662f\u96fb\u8166\u5167\u5efa\u7684")
+    kv_item("Internet (fonts)", "note", "Google Fonts not reachable: the apps work, with the computer's own fonts")
   }
   do.call(rbind, out)
 }
 
-#' Linux：哪些系統函式庫找不到（用 ldd 看每個套件的 .so）
+#' Linux: system libraries that cannot be found (ldd on each package's .so files)
 #'
-#' 回傳具名 list：名稱是找不到的函式庫（例如 `libuv.so.1`），值是需要它的套件。
+#' Returns a named list: names are the missing libraries (for example `libuv.so.1`),
+#' values are the packages that need them.
 #' @noRd
 kv_missing_syslibs <- function(pkgs) {
   if (!nzchar(Sys.which("ldd"))) return(list())
@@ -159,7 +148,7 @@ kv_missing_syslibs <- function(pkgs) {
   miss
 }
 
-#' 系統函式庫的檔名換成 apt 的套件名稱（猜不到的照原樣）
+#' System library file names to apt package names (unknown ones as they are)
 #' @noRd
 kv_apt_name <- function(miss) {
   known <- c("libuv.so.1" = "libuv1", "libicuuc" = "libicu-dev", "libicui18n" = "libicu-dev",
@@ -174,15 +163,15 @@ kv_apt_name <- function(miss) {
   unique(unname(out))
 }
 
-#' app 的 log 裡最有用的幾行：錯誤訊息（沒有時是最後幾行）
+#' The useful lines of an app log: the errors (or the last lines when there are none)
 #' @noRd
 kv_log_errors <- function(lines, n = 8) {
-  lines <- lines[!grepl("^\\s*[0-9]+: ", lines)]  # 呼叫堆疊（traceback）不用看
+  lines <- lines[!grepl("^\\s*[0-9]+: ", lines)]  # skip the traceback
   err <- grep("error|Error|cannot|unable|not found", lines, value = TRUE)
   utils::tail(if (length(err)) err else lines, n)
 }
 
-#' 在另一個 R 裡載入套件，回傳錯誤訊息（都載得起來時是空的）
+#' Load packages in a separate R; returns the error messages (empty when all load)
 #' @noRd
 kv_try_load <- function(pkgs) {
   script <- tempfile("kitverse-load-", fileext = ".R")
@@ -198,14 +187,14 @@ kv_try_load <- function(pkgs) {
   out[nzchar(trimws(out))]
 }
 
-#' 連不連得到某個網址
+#' Whether a URL can be reached
 #' @noRd
 kv_online <- function(url) {
   h <- tryCatch(suppressWarnings(curlGetHeaders(url, timeout = 10)), error = function(e) NULL)
   !is.null(h) && attr(h, "status") < 400
 }
 
-#' 在另一個 R 裡開 app（不開瀏覽器），等網頁回來，再關掉
+#' Start an app in a separate R (no browser), wait for the page, then stop it
 #' @noRd
 kv_check_app <- function(app, timeout = 120) {
   port <- kv_free_port()
@@ -234,18 +223,16 @@ kv_check_app <- function(app, timeout = 120) {
   if (file.exists(pidfile)) tools::pskill(as.integer(readLines(pidfile, warn = FALSE)[1]))
   if (ok) {
     unlink(log)
-    # 原文：開啟  |  秒開好
-    kv_item(paste0("\u958b\u555f ", app$name), "ok", paste0(secs, " \u79d2\u958b\u597d"))
+    kv_item(paste("Start", app$name), "ok", paste0("ready in ", secs, " s"))
   } else {
     tail_log <- kv_log_errors(readLines(log, warn = FALSE, encoding = "UTF-8"))
-    # 原文：開啟 
-    kv_item(paste0("\u958b\u555f ", app$name), "fail",
-            # 原文： 秒內沒有開好。最後的訊息：\n    
-            paste0(timeout, " \u79d2\u5167\u6c92\u6709\u958b\u597d\u3002\u6700\u5f8c\u7684\u8a0a\u606f\uff1a\n    ", paste(tail_log, collapse = "\n    ")))
+    kv_item(paste("Start", app$name), "fail",
+            paste0("not ready within ", timeout, " s. Last messages:\n    ",
+                   paste(tail_log, collapse = "\n    ")))
   }
 }
 
-#' 一個沒有人用的 port
+#' A port nobody uses
 #' @noRd
 kv_free_port <- function() {
   port <- tryCatch(httpuv::randomPort(), error = function(e) NULL)
@@ -253,24 +240,20 @@ kv_free_port <- function() {
   as.integer(port)
 }
 
-#' 印出檢查結果
+#' Print the check results
 #' @noRd
 kv_print_check <- function(res) {
-  # 原文：✓ | ✗
-  mark <- c(ok = "\u2713", fail = "\u2717", note = "!")
-  # 原文： 的檢查\n\n
-  cat("\n kitverse ", kv_installed_version("kitverse"), " \u7684\u6aa2\u67e5\n\n", sep = "")
+  mark <- c(ok = "\u2714", fail = "\u2716", note = "!")
+  cat("\n", kv_rule(left = "Checking this computer",
+                    right = paste("kitverse", kv_installed_version("kitverse"))), "\n", sep = "")
   for (i in seq_len(nrow(res))) {
-    # 原文：：
-    cat(" ", mark[[res$status[i]]], " ", res$item[i], "\uff1a", res$detail[i], "\n", sep = "")
+    cat(mark[[res$status[i]]], " ", res$item[i], ": ", res$detail[i], "\n", sep = "")
   }
   n_fail <- sum(res$status == "fail")
-  cat("\n")
   if (n_fail == 0) {
-    # 原文： ✓ 都沒問題。開 app：kitverse::kitsui() 或 kitverse::kitjoin()\n\n
-    cat(" \u2713 \u90fd\u6c92\u554f\u984c\u3002\u958b app\uff1akitverse::kitsui() \u6216 kitverse::kitjoin()\n\n")
+    cat("\u2714 All good. library(kitverse), then run_kitsui() or run_kitjoin().\n\n")
   } else {
-    # 原文： ✗ 有  |  項要處理（上面打 ✗ 的）。請把這個畫面截圖給助教。\n\n
-    cat(" \u2717 \u6709 ", n_fail, " \u9805\u8981\u8655\u7406\uff08\u4e0a\u9762\u6253 \u2717 \u7684\uff09\u3002\u8acb\u628a\u9019\u500b\u756b\u9762\u622a\u5716\u7d66\u52a9\u6559\u3002\n\n", sep = "")
+    cat("\u2716 ", n_fail, " item", if (n_fail > 1) "s", " to fix (marked \u2716 above). ",
+        "Please send a screenshot of this to the workshop assistants.\n\n", sep = "")
   }
 }

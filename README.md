@@ -53,15 +53,26 @@ sudo apt install libuv1
 ## Use
 
 ```r
-kitverse::kitsui()    # open the scale-building app
-kitverse::kitjoin()   # open the data-joining app
+library(kitverse)   # attaches kits, kitsUI, kitJoin, kitDesign and lists their versions
+run_kitsui()        # the scale-building app (from kitsUI)
+run_kitjoin()       # the data-joining app (from kitJoin)
 ```
+
+```
+── Attaching core kitverse packages ─────────────────────────── kitverse 0.1.0 ──
+✔ kits      0.25.2     ✔ kitJoin   0.6.0
+✔ kitsUI    0.5.0      ✔ kitDesign 0.4.0
+── Conflicts ─────────────────────────────────────────── kitverse_conflicts() ──
+✖ kitJoin::kit_app() masks kitsUI::kit_app()
+ℹ Start an app: run_kitsui() or run_kitjoin(). Check this computer: kitverse_check()
+```
+
+Like tidyverse, kitverse only installs and attaches the packages; their functions are used directly
+(`run_kitsui()` comes from kitsUI, `run_kitjoin()` from kitJoin). kitverse itself only adds the
+`kitverse_*()` helpers below.
 
 The app opens in your browser. When you are done, go back to R and press Esc (the R window on macOS and
 Windows) or Ctrl+C.
-
-You can also run `library(kitverse)` first: it loads the four packages, lists their versions, and then
-`kitsui()` and `kitjoin()` work directly.
 
 ## When something goes wrong
 
@@ -95,5 +106,4 @@ source("D:/kitverse-repo/install.R")
   `remotes::install_github()` runs into GitHub's limit of 60 requests per hour).
 - `Remotes:` must point at the same kitDesign tag as kitsUI and kitJoin (now `jiewenTsai/kitDesign@v0.4.0`);
   two different refs for one package make pak stop with "dependency conflict".
-- Chinese text in R strings must be written as `\uXXXX`: after editing, run
-  `LC_ALL=en_US.UTF-8 Rscript tools/escape_non_ascii.R`.
+- R code must be ASCII: write symbols such as ✔ as `"\u2714"`.

@@ -1,14 +1,18 @@
-#' kitverse：一次裝好、一行打開 KIT 的研究工具
+#' kitverse: install the KIT research tools in one step
 #'
-#' 裝 kitverse 就會裝好 kits、kitsUI、kitJoin、kitDesign 和它們需要的所有套件。
+#' Installing kitverse installs kits, kitsUI, kitJoin, kitDesign and every package they need.
+#' Like tidyverse, `library(kitverse)` attaches these core packages and lists their versions;
+#' their functions are then used directly, for example `run_kitsui()` and `run_kitjoin()`.
 #'
-#' - [kitsui()]、[kitjoin()]：開 app。
-#' - [kitverse_check()]：檢查這台電腦（R、套件、真的把 app 開起來試）。
-#' - [kitverse_update()]：裝缺少的、更新太舊的套件。
-#' - [kitverse_requirements()]：要哪些套件、版本。
-#' - [kitverse_repos()]：從哪裡裝。
+#' kitverse itself only adds the helpers:
 #'
-#' 安裝（Windows、macOS 不用 Rtools 或 Xcode）：
+#' - [kitverse_check()]: check this computer (R, packages, and really starting both apps).
+#' - [kitverse_update()]: install missing packages and update those that are too old.
+#' - [kitverse_conflicts()]: functions in the core packages that mask other functions.
+#' - [kitverse_requirements()]: which packages and versions are needed.
+#' - [kitverse_repos()]: where packages are installed from.
+#'
+#' Install (Windows and macOS need no Rtools or Xcode):
 #'
 #' ```r
 #' install.packages("kitverse", repos = c("https://jiewentsai.r-universe.dev",

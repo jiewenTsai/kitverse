@@ -50,13 +50,24 @@ sudo apt install libuv1
 ## 使用
 
 ```r
-kitverse::kitsui()    # 開量尺建構工具
-kitverse::kitjoin()   # 開資料串接工具
+library(kitverse)   # 載入 kits、kitsUI、kitJoin、kitDesign，列出版本
+run_kitsui()        # 量尺建構工具（kitsUI 的函式）
+run_kitjoin()       # 資料串接工具（kitJoin 的函式）
 ```
 
-瀏覽器會自動打開 app。用完回到 R 按 Esc（macOS、Windows 的 R 視窗）或 Ctrl+C 關掉。
+```
+── Attaching core kitverse packages ─────────────────────────── kitverse 0.1.0 ──
+✔ kits      0.25.2     ✔ kitJoin   0.6.0
+✔ kitsUI    0.5.0      ✔ kitDesign 0.4.0
+── Conflicts ─────────────────────────────────────────── kitverse_conflicts() ──
+✖ kitJoin::kit_app() masks kitsUI::kit_app()
+ℹ Start an app: run_kitsui() or run_kitjoin(). Check this computer: kitverse_check()
+```
 
-也可以先 `library(kitverse)`：會載入四個套件、列出版本，之後直接打 `kitsui()`、`kitjoin()`。
+和 tidyverse 一樣：kitverse 只負責裝好、載入這些套件，函式直接用各套件自己的
+（`run_kitsui()` 是 kitsUI 的、`run_kitjoin()` 是 kitJoin 的）。kitverse 自己只多了下面這幾個 `kitverse_*()`。
+
+瀏覽器會自動打開 app。用完回到 R 按 Esc（macOS、Windows 的 R 視窗）或 Ctrl+C 關掉。
 
 ## 出問題時
 
@@ -87,4 +98,4 @@ source("D:/kitverse-repo/install.R")
   版本，而且不經過 GitHub API（80 人在同一個會場用 `remotes::install_github()` 時，GitHub 每小時 60 次的限制會被用完）。
 - `Remotes:` 的 kitDesign 要和 kitsUI、kitJoin 指向同一個 tag（現在是 `jiewenTsai/kitDesign@v0.4.0`）：
   同一個套件有兩個不同的來源時，pak 會停在「dependency conflict」。
-- R 程式碼裡的中文字串要換成 `\uXXXX`：寫完跑 `LC_ALL=en_US.UTF-8 Rscript tools/escape_non_ascii.R`。
+- R 程式碼只能用 ASCII：✔ 這類符號要寫成 `"\u2714"`。

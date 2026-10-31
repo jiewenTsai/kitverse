@@ -2,20 +2,22 @@
 % Please edit documentation in R/attach.R
 \name{kitverse_conflicts}
 \alias{kitverse_conflicts}
-\title{核心套件的名稱衝突}
+\title{Conflicts between the core packages and other attached packages}
 \usage{
 kitverse_conflicts(only = kv_core())
 }
 \arguments{
-\item{only}{只看這些核心套件（預設是全部有載入的）。}
+\item{only}{Only these core packages (default: all of them that are attached).}
 }
 \value{
-data.frame（印出來是一行一個衝突）：\code{name}、\code{winner}（現在用的套件）、\code{losers}（被蓋過的套件）。
+A data frame that prints one line per conflict: \code{name}, \code{winner} (the package in use),
+\code{losers} (the masked packages).
 }
 \description{
-列出核心套件（kits、kitsUI、kitJoin、kitDesign）裡，和搜尋路徑上其他套件同名的函式：
-哪一個蓋過了哪一個。打 \verb{kits::} 這樣的前綴，就一定用到那個套件的版本。
-\code{library(kitverse)} 時會印出來（像 \code{tidyverse_conflicts()}）。
+Lists functions in the core packages (kits, kitsUI, kitJoin, kitDesign) that have the same
+name as a function in another attached package: which one wins and which ones are masked.
+Writing the prefix (\verb{kits::}) always gets that package's version. \code{library(kitverse)} prints
+this, like \code{tidyverse_conflicts()}.
 }
 \examples{
 kitverse_conflicts()

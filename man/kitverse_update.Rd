@@ -2,27 +2,31 @@
 % Please edit documentation in R/update.R
 \name{kitverse_update}
 \alias{kitverse_update}
-\title{安裝缺少的、更新太舊的套件}
+\title{Install missing packages and update packages that are too old}
 \usage{
 kitverse_update(all = FALSE, rounds = 4, quiet = FALSE)
 }
 \arguments{
-\item{all}{\code{TRUE} 時，套件庫有新版的也一起更新（不只是太舊的）。}
+\item{all}{\code{TRUE} to also update packages that have a newer version in the repositories
+(not only those that are too old).}
 
-\item{rounds}{最多重複幾次。}
+\item{rounds}{At most how many rounds.}
 
-\item{quiet}{\code{TRUE} 時不印安裝過程。}
+\item{quiet}{\code{TRUE} to hide the installation output.}
 }
 \value{
-裝了或更新了哪些套件（invisible）。
+The packages installed or updated (invisibly).
 }
 \description{
-找出 kitverse 需要、但沒有安裝或版本太舊的套件（\code{\link[=kitverse_requirements]{kitverse_requirements()}}），
-從 \code{\link[=kitverse_repos]{kitverse_repos()}} 安裝。新裝的套件可能又需要別的套件，所以會重複到沒有缺的為止
-（最多 \code{rounds} 次）。安裝在另一個 R 程序裡進行，現在這個 R 載入了什麼都沒關係。
+Finds the packages kitverse needs that are not installed or older than required
+(\code{\link[=kitverse_requirements]{kitverse_requirements()}}) and installs them from \code{\link[=kitverse_repos]{kitverse_repos()}}. A newly installed
+package may need further packages, so this repeats until nothing is missing (at most
+\code{rounds} times). The installation runs in a separate R process, so it does not matter what
+the current R session has loaded.
 }
 \details{
-剛裝好的 R 還沒有個人的套件資料夾，這裡會先建立（\code{R_LIBS_USER}）。
+A freshly installed R has no personal package library yet; this creates it first
+(\code{R_LIBS_USER}).
 }
 \examples{
 if (interactive()) kitverse_update()

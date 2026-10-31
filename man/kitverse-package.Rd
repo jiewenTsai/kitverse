@@ -4,20 +4,23 @@
 \name{kitverse-package}
 \alias{kitverse}
 \alias{kitverse-package}
-\title{kitverse：一次裝好、一行打開 KIT 的研究工具}
+\title{kitverse: install the KIT research tools in one step}
 \description{
-裝 kitverse 就會裝好 kits、kitsUI、kitJoin、kitDesign 和它們需要的所有套件。
+Installing kitverse installs kits, kitsUI, kitJoin, kitDesign and every package they need.
+Like tidyverse, \code{library(kitverse)} attaches these core packages and lists their versions;
+their functions are then used directly, for example \code{run_kitsui()} and \code{run_kitjoin()}.
 }
 \details{
+kitverse itself only adds the helpers:
 \itemize{
-\item \code{\link[=kitsui]{kitsui()}}、\code{\link[=kitjoin]{kitjoin()}}：開 app。
-\item \code{\link[=kitverse_check]{kitverse_check()}}：檢查這台電腦（R、套件、真的把 app 開起來試）。
-\item \code{\link[=kitverse_update]{kitverse_update()}}：裝缺少的、更新太舊的套件。
-\item \code{\link[=kitverse_requirements]{kitverse_requirements()}}：要哪些套件、版本。
-\item \code{\link[=kitverse_repos]{kitverse_repos()}}：從哪裡裝。
+\item \code{\link[=kitverse_check]{kitverse_check()}}: check this computer (R, packages, and really starting both apps).
+\item \code{\link[=kitverse_update]{kitverse_update()}}: install missing packages and update those that are too old.
+\item \code{\link[=kitverse_conflicts]{kitverse_conflicts()}}: functions in the core packages that mask other functions.
+\item \code{\link[=kitverse_requirements]{kitverse_requirements()}}: which packages and versions are needed.
+\item \code{\link[=kitverse_repos]{kitverse_repos()}}: where packages are installed from.
 }
 
-安裝（Windows、macOS 不用 Rtools 或 Xcode）：
+Install (Windows and macOS need no Rtools or Xcode):
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{install.packages("kitverse", repos = c("https://jiewentsai.r-universe.dev",
                                        "https://cloud.r-project.org"))

@@ -1,4 +1,4 @@
-# 假的套件資料夾：每個套件只有一個 DESCRIPTION
+# A fake package library: each package has only a DESCRIPTION
 fake_lib <- function(pkgs) {
   lib <- withr_tempdir()
   for (p in names(pkgs)) {
@@ -40,7 +40,7 @@ test_that("kitverse_requirements() follows dependencies and flags missing and ol
   expect_equal(req$min, c("2.0", NA, "0.5"))
   expect_equal(req$ok, c(FALSE, TRUE, FALSE))
   expect_match(req$why[1], "1.5")
-  expect_match(req$why[3], "沒有安裝")
+  expect_match(req$why[3], "not installed")
 })
 
 test_that("kv_default_cran() uses Posit Package Manager on Ubuntu only", {

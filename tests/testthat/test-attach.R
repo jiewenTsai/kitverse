@@ -5,9 +5,9 @@ test_that("kv_attach_message() lists packages in two columns like tidyverse", {
   none <- structure(data.frame(name = character(0), winner = character(0), losers = character(0)),
                     class = c("kitverse_conflicts", "data.frame"))
   msg <- strsplit(kv_attach_message(res, conflicts = none), "\n")[[1]]
-  expect_match(msg[1], "^── .* kitverse .* ──$")
-  expect_match(msg[2], "✔ kits +0.25.2 +✔ kitJoin +0.6.0")
-  expect_match(msg[3], "✔ kitsUI +0.5.0 +✔ kitDesign 0.4.0")
+  expect_match(msg[1], "^\u2500\u2500 .* kitverse .* \u2500\u2500$")
+  expect_match(msg[2], "\u2714 kits +0.25.2 +\u2714 kitJoin +0.6.0")
+  expect_match(msg[3], "\u2714 kitsUI +0.5.0 +\u2714 kitDesign 0.4.0")
   expect_false(any(grepl("kitverse_conflicts", msg)))
 })
 
@@ -17,9 +17,9 @@ test_that("kv_attach_message() shows broken packages and conflicts", {
   cf <- structure(data.frame(name = "filter", winner = "kits", losers = "stats", stringsAsFactors = FALSE),
                   class = c("kitverse_conflicts", "data.frame"))
   msg <- kv_attach_message(res, conflicts = cf)
-  expect_match(msg, "✖ kitsUI")
+  expect_match(msg, "\u2716 kitsUI")
   expect_match(msg, "kitverse_update")
-  expect_match(msg, "✖ kits::filter\\(\\) .* stats::filter\\(\\)")
+  expect_match(msg, "\u2716 kits::filter\\(\\) masks stats::filter\\(\\)")
 })
 
 test_that("kitverse_conflicts() finds a function that masks another", {
