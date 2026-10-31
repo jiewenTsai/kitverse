@@ -1,3 +1,12 @@
+# kitverse 0.4.1
+
+## Fixes
+
+* Needs kitDesign 0.5.2, kitsUI 0.7.2 and kitJoin 0.7.2: downloads in the apps no longer fail with
+  "Not Found" in Firefox with a "document viewer" add-on such as Google PDF Viewer (the download
+  buttons are no longer links an add-on can take over). `kitverse_update()` installs them, and
+  `library(kitverse)` says when an older one is installed.
+
 # kitverse 0.4.0
 
 ## Changes you can see
