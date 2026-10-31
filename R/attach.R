@@ -8,8 +8,8 @@
 # What it prints (the tidyverse format):
 #
 #   ── Attaching core kitverse packages ─────────────────────── kitverse 0.1.0 ──
-#   ✔ kits      0.25.2     ✔ kitJoin   0.6.0
-#   ✔ kitsUI    0.5.0      ✔ kitDesign 0.4.0
+#   ✔ kits      0.25.2     ✔ kitJoin   0.7.0
+#   ✔ kitsUI    0.6.0      ✔ kitDesign 0.5.0
 #   ── Conflicts ─────────────────────────────────────── kitverse_conflicts() ──
 #   ✖ kitJoin::kit_app() masks kitsUI::kit_app()
 #   ℹ Start an app: run_kitsui() or run_kitjoin(). Check this computer: kitverse_check()

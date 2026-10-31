@@ -62,8 +62,8 @@ run_kitjoin()       # the data-processing app (from kitJoin)
 
 ```
 ── Attaching core kitverse packages ─────────────────────────── kitverse 0.1.0 ──
-✔ kits      0.25.2     ✔ kitJoin   0.6.0
-✔ kitsUI    0.5.0      ✔ kitDesign 0.4.0
+✔ kits      0.25.2     ✔ kitJoin   0.7.0
+✔ kitsUI    0.6.0      ✔ kitDesign 0.5.0
 ── Conflicts ─────────────────────────────────────────── kitverse_conflicts() ──
 ✖ kitJoin::kit_app() masks kitsUI::kit_app()
 ℹ Start an app: run_kitsui() or run_kitjoin(). Check this computer: kitverse_check()
@@ -106,6 +106,6 @@ source("D:/kitverse-repo/install.R")
 - Packages come from r-universe (<https://jiewentsai.r-universe.dev>): a CRAN-like repository with
   pre-built Windows and macOS packages that does not go through the GitHub API (with 80 people in one room,
   `remotes::install_github()` runs into GitHub's limit of 60 requests per hour).
-- `Remotes:` must point at the same kitDesign tag as kitsUI and kitJoin (now `jiewenTsai/kitDesign@v0.4.0`);
+- `Remotes:` must point at the same kitDesign tag as kitsUI and kitJoin (now `jiewenTsai/kitDesign@v0.5.0`);
   two different refs for one package make pak stop with "dependency conflict".
 - R code must be ASCII: write symbols such as ✔ as `"\u2714"`.

@@ -59,8 +59,8 @@ run_kitjoin()       # 資料處理工具（kitJoin 的函式）
 
 ```
 ── Attaching core kitverse packages ─────────────────────────── kitverse 0.1.0 ──
-✔ kits      0.25.2     ✔ kitJoin   0.6.0
-✔ kitsUI    0.5.0      ✔ kitDesign 0.4.0
+✔ kits      0.25.2     ✔ kitJoin   0.7.0
+✔ kitsUI    0.6.0      ✔ kitDesign 0.5.0
 ── Conflicts ─────────────────────────────────────────── kitverse_conflicts() ──
 ✖ kitJoin::kit_app() masks kitsUI::kit_app()
 ℹ Start an app: run_kitsui() or run_kitjoin(). Check this computer: kitverse_check()
@@ -98,6 +98,6 @@ source("D:/kitverse-repo/install.R")
   會有一個 NOTE「Namespaces in Imports field not imported from」：這是故意的。Imports 只是讓這些套件被裝好。
 - 套件從 r-universe（<https://jiewentsai.r-universe.dev>）裝：像 CRAN 一樣的套件庫，有 Windows、macOS 編好的
   版本，而且不經過 GitHub API（80 人在同一個會場用 `remotes::install_github()` 時，GitHub 每小時 60 次的限制會被用完）。
-- `Remotes:` 的 kitDesign 要和 kitsUI、kitJoin 指向同一個 tag（現在是 `jiewenTsai/kitDesign@v0.4.0`）：
+- `Remotes:` 的 kitDesign 要和 kitsUI、kitJoin 指向同一個 tag（現在是 `jiewenTsai/kitDesign@v0.5.0`）：
   同一個套件有兩個不同的來源時，pak 會停在「dependency conflict」。
 - R 程式碼只能用 ASCII：✔ 這類符號要寫成 `"\u2714"`。

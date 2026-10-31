@@ -21,10 +21,10 @@ Depends: R (>= 4.1.0)
 Imports:
     bslib (>= 0.11.0),
     httpuv,
-    kitDesign (>= 0.4.0),
-    kitJoin (>= 0.6.0),
+    kitDesign (>= 0.5.0),
+    kitJoin (>= 0.7.0),
     kits (>= 0.25.2),
-    kitsUI (>= 0.5.0),
+    kitsUI (>= 0.6.0),
     shiny,
     tools,
     utils
@@ -32,7 +32,7 @@ Suggests:
     testthat (>= 3.0.0)
 Remotes:
     jiewenTsai/kits,
-    jiewenTsai/kitDesign@v0.4.0,
+    jiewenTsai/kitDesign@v0.5.0,
     jiewenTsai/kitsUI,
     jiewenTsai/kitJoin
 Additional_repositories: https://jiewentsai.r-universe.dev
