@@ -30,7 +30,7 @@ Suggests:
     testthat (>= 3.0.0)
 Remotes:
     jiewenTsai/kits,
-    jiewenTsai/kitDesign,
+    jiewenTsai/kitDesign@v0.4.0,
     jiewenTsai/kitsUI,
     jiewenTsai/kitJoin
 Additional_repositories: https://jiewentsai.r-universe.dev
