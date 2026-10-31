@@ -107,6 +107,6 @@ source("D:/kitverse-repo/install.R")
 - Packages come from r-universe (<https://jiewentsai.r-universe.dev>): a CRAN-like repository with
   pre-built Windows and macOS packages that does not go through the GitHub API (with 80 people in one room,
   `remotes::install_github()` runs into GitHub's limit of 60 requests per hour).
-- `Remotes:` must point at the same kitDesign tag as kitsUI and kitJoin (now `jiewenTsai/kitDesign@v0.6.0`);
+- `Remotes:` must point at the same kitDesign tag as kitsUI and kitJoin (now `jiewenTsai/kitDesign@v0.6.1`);
   two different refs for one package make pak stop with "dependency conflict".
 - R code must be ASCII: write symbols such as ✔ as `"\u2714"`.
