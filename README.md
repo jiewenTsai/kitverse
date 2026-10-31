@@ -4,10 +4,12 @@ English | [繁體中文](README.zh-TW.md)
 
 Install the KIT research tools in one step and open them with one line. Installing kitverse installs:
 
-- **kits**: item calibration, linking across cohorts, scoring.
-- **kitsUI**: the scale-building app (Shiny).
-- **kitJoin**: the data-joining app (Shiny).
-- **kitDesign**: the interface shared by both apps.
+| Package | What it is | GitHub |
+|---|---|---|
+| **kits** | Item calibration, linking across cohorts, scoring | [jiewenTsai/kits](https://github.com/jiewenTsai/kits) |
+| **kitsUI** | KIT 量尺建構工具 (scale-building app, Shiny): `run_kitsui()` | [jiewenTsai/kitsUI](https://github.com/jiewenTsai/kitsUI) |
+| **kitJoin** | KIT 資料處理工具 (data-processing app, Shiny): `run_kitjoin()` | [jiewenTsai/kitJoin](https://github.com/jiewenTsai/kitJoin) |
+| **kitDesign** | The interface shared by both apps | [jiewenTsai/kitDesign](https://github.com/jiewenTsai/kitDesign) · [website](https://jiewentsai.github.io/kitDesign/) |
 
 plus every package they need (about 90). RStudio is not needed.
 
@@ -55,7 +57,7 @@ sudo apt install libuv1
 ```r
 library(kitverse)   # attaches kits, kitsUI, kitJoin, kitDesign and lists their versions
 run_kitsui()        # the scale-building app (from kitsUI)
-run_kitjoin()       # the data-joining app (from kitJoin)
+run_kitjoin()       # the data-processing app (from kitJoin)
 ```
 
 ```

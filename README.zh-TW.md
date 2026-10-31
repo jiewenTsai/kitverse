@@ -4,10 +4,12 @@
 
 一次裝好、一行打開 KIT 的研究工具。裝 kitverse 就會裝好：
 
-- **kits**：題目校準、跨世代連結、計分。
-- **kitsUI**：量尺建構工具（Shiny app）。
-- **kitJoin**：資料串接工具（Shiny app）。
-- **kitDesign**：兩個 app 共用的介面。
+| 套件 | 是什麼 | GitHub |
+|---|---|---|
+| **kits** | 題目校準、跨世代連結、計分 | [jiewenTsai/kits](https://github.com/jiewenTsai/kits) |
+| **kitsUI** | KIT 量尺建構工具（Shiny app）：`run_kitsui()` | [jiewenTsai/kitsUI](https://github.com/jiewenTsai/kitsUI) |
+| **kitJoin** | KIT 資料處理工具（Shiny app）：`run_kitjoin()` | [jiewenTsai/kitJoin](https://github.com/jiewenTsai/kitJoin) |
+| **kitDesign** | 兩個 app 共用的介面 | [jiewenTsai/kitDesign](https://github.com/jiewenTsai/kitDesign) · [網站](https://jiewentsai.github.io/kitDesign/zh/) |
 
 以及它們需要的所有套件（約 90 個）。不需要 RStudio。
 
@@ -52,7 +54,7 @@ sudo apt install libuv1
 ```r
 library(kitverse)   # 載入 kits、kitsUI、kitJoin、kitDesign，列出版本
 run_kitsui()        # 量尺建構工具（kitsUI 的函式）
-run_kitjoin()       # 資料串接工具（kitJoin 的函式）
+run_kitjoin()       # 資料處理工具（kitJoin 的函式）
 ```
 
 ```
