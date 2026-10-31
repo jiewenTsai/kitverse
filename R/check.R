@@ -92,6 +92,15 @@ kv_check_items <- function(req = kitverse_requirements()) {
     }
   }
 
+  # Updated while loaded in this R session: only a restart of R helps
+  stale <- kv_stale_loaded(req$pkg)
+  if (nrow(stale) > 0) {
+    out[[length(out) + 1]] <- kv_item("This R session", "fail", paste0(
+      paste0(stale$pkg, " ", stale$loaded, " is loaded but ", stale$installed, " is installed",
+             collapse = "; "),
+      "\n    \u2192 restart R (in RStudio: Session > Restart R)"))
+  }
+
   # Linux: system libraries the compiled packages need (for example fs needs libuv.so.1).
   # Without them the packages still load, and the app fails only when it draws the page.
   if (Sys.info()[["sysname"]] == "Linux") {
@@ -243,7 +252,7 @@ kv_free_port <- function() {
 #' Print the check results
 #' @noRd
 kv_print_check <- function(res) {
-  mark <- c(ok = "\u2714", fail = "\u2716", note = "!")
+  mark <- c(ok = kv_col("\u2714", "green"), fail = kv_col("\u2716", "red"), note = kv_col("!", "cyan"))
   cat("\n", kv_rule(left = "Checking this computer",
                     right = paste("kitverse", kv_installed_version("kitverse"))), "\n", sep = "")
   for (i in seq_len(nrow(res))) {
@@ -251,9 +260,9 @@ kv_print_check <- function(res) {
   }
   n_fail <- sum(res$status == "fail")
   if (n_fail == 0) {
-    cat("\u2714 All good. library(kitverse), then run_kitsui() or run_kitjoin().\n\n")
+    cat(kv_col("\u2714", "green"), " All good. library(kitverse), then run_kitsui() or run_kitjoin().\n\n", sep = "")
   } else {
-    cat("\u2716 ", n_fail, " item", if (n_fail > 1) "s", " to fix (marked \u2716 above). ",
+    cat(kv_col("\u2716", "red"), " ", n_fail, " item", if (n_fail > 1) "s", " to fix (marked \u2716 above). ",
         "Please send a screenshot of this to the workshop assistants.\n\n", sep = "")
   }
 }

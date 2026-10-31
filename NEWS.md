@@ -1,3 +1,18 @@
+# kitverse 0.3.0
+
+## Changes you can see
+
+* Colors like tidyverse (with the cli package): ✔ green, ✖ red, package names blue, grey rules.
+  Consoles without colors (for example Windows Rgui) get plain text.
+* When this R session has an older version of a package loaded than the one installed (a package
+  was updated while loaded), `library(kitverse)` and `kitverse_check()` say to restart R instead
+  of running `kitverse_update()`. This also explains warnings such as
+  "internal error ... in R_decompress1".
+
+## Under the hood
+
+* `Imports: cli` (already installed with dplyr and friends).
+
 # kitverse 0.2.0
 
 ## Changes you can see

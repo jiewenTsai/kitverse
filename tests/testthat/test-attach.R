@@ -1,6 +1,6 @@
 test_that("kv_attach_message() lists packages in two columns like tidyverse", {
   res <- data.frame(pkg = c("kits", "kitsUI", "kitJoin", "kitDesign"),
-                    version = c("0.25.2", "0.5.0", "0.6.0", "0.4.0"), ok = TRUE, why = "",
+                    version = c("0.25.2", "0.5.0", "0.6.0", "0.4.0"), ok = TRUE, why = "", fix = "",
                     stringsAsFactors = FALSE)
   none <- structure(data.frame(name = character(0), winner = character(0), losers = character(0)),
                     class = c("kitverse_conflicts", "data.frame"))
@@ -13,7 +13,7 @@ test_that("kv_attach_message() lists packages in two columns like tidyverse", {
 
 test_that("kv_attach_message() shows broken packages and conflicts", {
   res <- data.frame(pkg = c("kits", "kitsUI"), version = c("0.25.2", "0.5.0"), ok = c(TRUE, FALSE),
-                    why = c("", "bslib: too old"), stringsAsFactors = FALSE)
+                    why = c("", "bslib: too old"), fix = c("", "update"), stringsAsFactors = FALSE)
   cf <- structure(data.frame(name = "filter", winner = "kits", losers = "stats", stringsAsFactors = FALSE),
                   class = c("kitverse_conflicts", "data.frame"))
   msg <- kv_attach_message(res, conflicts = cf)
@@ -32,4 +32,19 @@ test_that("kitverse_conflicts() finds a function that masks another", {
   expect_equal(cf$name, "kitverse_test_fn")
   expect_equal(cf$losers, "other")
   expect_match(capture.output(print(cf)), "kvfake::kitverse_test_fn")
+})
+
+test_that("kv_attach_message() says to restart R when an old version is loaded", {
+  res <- data.frame(pkg = c("kits", "kitJoin"), version = c("0.25.2", "0.7.0"), ok = c(TRUE, FALSE),
+                    why = c("", "kitDesign 0.4.0 is loaded in this R session, but 0.5.0 is installed"),
+                    fix = c("", "restart"), stringsAsFactors = FALSE)
+  none <- structure(data.frame(name = character(0), winner = character(0), losers = character(0)),
+                    class = c("kitverse_conflicts", "data.frame"))
+  msg <- kv_attach_message(res, conflicts = none)
+  expect_match(msg, "Restart R")
+  expect_false(grepl("kitverse_update", msg))
+})
+
+test_that("kv_stale_loaded() finds nothing when loaded and installed versions match", {
+  expect_equal(nrow(kv_stale_loaded(c("stats", "utils", "not.a.package"))), 0)
 })
