@@ -1,0 +1,11 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.git$
+^\.github$
+^LICENSE\.md$
+^README\.md$
+^README\.zh-TW\.md$
+^install\.R$
+^tools$
+^.*\.tar\.gz$
+^kitverse\.Rcheck$

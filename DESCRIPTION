@@ -1,0 +1,39 @@
+Package: kitverse
+Title: Install and Launch the KIT Research Tools in One Step
+Version: 0.1.0
+Date: 2026-11-01
+Authors@R: person("Jie-Wen", "Tsai", email = "tsai.jiewen@gmail.com", role = c("aut", "cre"))
+Description: One package that installs the KIT research tools and everything
+    they need: 'kits' (item calibration, linking and scoring), the 'shiny'
+    apps 'kitsUI' and 'kitJoin', and the shared interface package
+    'kitDesign'. It checks the computer (R version, package library, package
+    versions, and whether each app really starts), updates packages that are
+    missing or too old, and launches the apps with kitsui() and kitjoin().
+    Loading 'kitverse' itself loads none of the other packages, so the check
+    and the update still work when a package is broken.
+License: MIT + file LICENSE
+URL: https://github.com/jiewenTsai/kitverse, https://jiewentsai.r-universe.dev
+BugReports: https://github.com/jiewenTsai/kitverse/issues
+Encoding: UTF-8
+Depends: R (>= 4.1.0)
+Imports:
+    bslib (>= 0.11.0),
+    httpuv,
+    kitDesign (>= 0.4.0),
+    kitJoin (>= 0.6.0),
+    kits (>= 0.25.2),
+    kitsUI (>= 0.5.0),
+    shiny,
+    tools,
+    utils
+Suggests:
+    testthat (>= 3.0.0)
+Remotes:
+    jiewenTsai/kits,
+    jiewenTsai/kitDesign,
+    jiewenTsai/kitsUI,
+    jiewenTsai/kitJoin
+Additional_repositories: https://jiewentsai.r-universe.dev
+Config/testthat/edition: 3
+Roxygen: list(markdown = TRUE)
+Config/roxygen2/version: 8.1.0

@@ -1,0 +1,44 @@
+test_that("kv_print_check() marks each item and sums up", {
+  res <- rbind(kv_item("R", "ok", "4.6.1"), kv_item("x", "fail", "bad"), kv_item("y", "note", "hm"))
+  out <- capture.output(kv_print_check(res))
+  expect_true(any(grepl("✓ R", out)))
+  expect_true(any(grepl("✗ x", out)))
+  expect_true(any(grepl("! y", out)))
+  expect_true(any(grepl("1 項要處理", out)))
+})
+
+test_that("kv_check_items() reports a missing package with the fix", {
+  req <- data.frame(pkg = c("bslib", "shiny"), min = c("0.11.0", NA), have = c("0.10.0", "1.9"),
+                    ok = c(FALSE, TRUE), why = c("too old", ""), stringsAsFactors = FALSE)
+  res <- kv_check_items(req)
+  expect_equal(res$status[res$item == "套件版本"], "fail")
+  expect_match(res$detail[res$item == "套件版本"], "kitverse_update")
+  expect_equal(res$status[res$item == "套件載入"], "fail")
+})
+
+test_that("kitsui() stops with the fix when a package is missing", {
+  skip_if(nzchar(system.file(package = "kitsUI")))
+  expect_error(kitsui(), "kitverse_update")
+})
+
+test_that("both apps start and answer (slow: really starts them)", {
+  skip_on_cran()
+  skip_if_not(nzchar(Sys.getenv("KITVERSE_TEST_APPS")))
+  for (app in kv_apps()) {
+    res <- kv_check_app(app, timeout = 120)
+    expect_equal(res$status, "ok", info = res$detail)
+  }
+})
+
+test_that("kv_log_errors() keeps the error lines, not the traceback", {
+  log <- c("Listening on http://127.0.0.1:8123", "Warning: Error in dyn.load: unable to load shared object 'fs.so':",
+           "  libuv.so.1: cannot open shared object file", "  14: rookCall", "   1: kitsUI::run_kitsui")
+  out <- kv_log_errors(log)
+  expect_true(any(grepl("libuv", out)))
+  expect_false(any(grepl("rookCall", out)))
+})
+
+test_that("kv_apt_name() maps missing libraries to apt packages", {
+  expect_equal(kv_apt_name(list("libuv.so.1" = "fs")), "libuv1")
+  expect_equal(kv_apt_name(list("libfoo.so.2" = "x", "libuv.so.1" = "fs")), c("libfoo", "libuv1"))
+})

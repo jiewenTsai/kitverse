@@ -1,0 +1,38 @@
+# What a workshop participant does, on a clean runner: install R, run install.R (packages from
+# r-universe and CRAN, no GitHub API), then kitverse_check() really starts both apps.
+# Run it by hand (Actions → install-test → Run workflow) after r-universe has built new versions.
+on:
+  workflow_dispatch:
+
+name: install-test.yaml
+
+permissions: read-all
+
+jobs:
+  install:
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+          use-public-rspm: false
+
+      - name: Install the way participants do
+        run: source("install.R")
+        shell: Rscript {0}
+
+      - name: Every check passes
+        run: |
+          res <- kitverse::kitverse_check()
+          if (any(res$status == "fail")) stop("kitverse_check() failed")
+        shell: Rscript {0}
