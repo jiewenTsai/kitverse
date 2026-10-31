@@ -1,3 +1,8 @@
+# kitverse 0.4.2
+
+* Needs kitDesign 0.6.0, kitsUI 0.8.0 and kitJoin 0.7.3: the plot toolbar in kitsUI saves PNGs at
+  2100 pixels / 300 dpi and SVGs for papers.
+
 # kitverse 0.4.1
 
 ## Fixes
