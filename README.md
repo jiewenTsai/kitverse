@@ -61,7 +61,7 @@ run_kitjoin()       # the data-processing app (from kitJoin)
 ```
 
 ```
-── Attaching core kitverse packages ─────────────────────────── kitverse 0.1.0 ──
+── Attaching core kitverse packages ─────────────────────────── kitverse 0.2.0 ──
 ✔ kits      0.25.2     ✔ kitJoin   0.7.0
 ✔ kitsUI    0.6.0      ✔ kitDesign 0.5.0
 ── Conflicts ─────────────────────────────────────────── kitverse_conflicts() ──
