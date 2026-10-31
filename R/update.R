@@ -47,7 +47,10 @@ kitverse_update <- function(all = FALSE, rounds = 4, quiet = FALSE) {
   }
   req <- kitverse_requirements()
   if (all(req$ok)) {
-    kv_say("\u2714 All packages are installed. Next: kitverse::kitverse_check()")
+    kv_say("\u2714 All packages are installed.")
+    # Saving plots as html needs pandoc; a computer with only R has none
+    kitverse_pandoc()
+    kv_say("Next: kitverse::kitverse_check()")
   } else {
     bad <- req[!req$ok, , drop = FALSE]
     kv_say("\u2716 Some packages still cannot be used: ", paste(bad$pkg, bad$why, collapse = "; "))

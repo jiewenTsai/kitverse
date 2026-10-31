@@ -25,7 +25,8 @@ plus every package they need (about 90). RStudio is not needed.
    The first time takes about 3–10 minutes. It ends with a checklist; all ✓ means you are ready.
    If there is a ✗, take a screenshot for the workshop assistants.
 
-Windows and macOS need no Rtools or Xcode: every package comes pre-built.
+Windows and macOS need no Rtools or Xcode: every package comes pre-built. RStudio and Quarto are not
+needed either: when R has no pandoc (needed to save plots), kitverse installs it.
 
 <details>
 <summary>Without source(): install by hand</summary>
@@ -61,7 +62,7 @@ run_kitjoin()       # the data-processing app (from kitJoin)
 ```
 
 ```
-── Attaching core kitverse packages ─────────────────────────── kitverse 0.3.0 ──
+── Attaching core kitverse packages ─────────────────────────── kitverse 0.4.0 ──
 ✔ kits      0.25.2     ✔ kitJoin   0.7.0
 ✔ kitsUI    0.6.0      ✔ kitDesign 0.5.0
 ── Conflicts ─────────────────────────────────────────── kitverse_conflicts() ──

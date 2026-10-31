@@ -115,6 +115,25 @@ kv_check_items <- function(req = kitverse_requirements()) {
     }
   }
 
+  # Pandoc: kitsUI's plot downloads (one html file) need it
+  out[[length(out) + 1]] <- if (kv_pandoc_found()) {
+    kv_item("Pandoc", "ok", kv_pandoc_dir())
+  } else {
+    kv_item("Pandoc", "fail",
+            "not found: plots cannot be downloaded\n    \u2192 run kitverse::kitverse_pandoc()")
+  }
+
+  # Saving every kind of file the apps offer, in a separate R
+  if (nrow(bad) == 0) out[[length(out) + 1]] <- kv_check_saving()
+
+  # Optional: kits::kits_save_plot(png = ) takes a browser screenshot (not used by the apps)
+  out[[length(out) + 1]] <- if (nzchar(system.file(package = "webshot2"))) {
+    kv_item("PNG plots (optional)", "ok", "webshot2 installed")
+  } else {
+    kv_item("PNG plots (optional)", "note",
+            "kits_save_plot(png = ) also needs webshot2 and Chrome; the apps do not use it")
+  }
+
   tmp <- tempdir()
   probe <- tempfile("kitverse-", tmpdir = tmp)
   ok_tmp <- tryCatch({ writeLines("ok", probe); unlink(probe); TRUE }, error = function(e) FALSE,
@@ -178,6 +197,47 @@ kv_log_errors <- function(lines, n = 8) {
   lines <- lines[!grepl("^\\s*[0-9]+: ", lines)]  # skip the traceback
   err <- grep("error|Error|cannot|unable|not found", lines, value = TRUE)
   utils::tail(if (length(err)) err else lines, n)
+}
+
+#' Save one file of each kind the apps offer, in a separate R
+#'
+#' The plot is saved the way kitsUI does it (kits::kits_save_plot(), one html file); tables as
+#' CSV (readr, as Excel reads it), csv.gz, SAV (haven) and zip (zip).
+#' @noRd
+kv_check_saving <- function() {
+  script <- tempfile("kitverse-save-", fileext = ".R")
+  log <- tempfile("kitverse-save-", fileext = ".log")
+  dir <- tempfile("kitverse-save-")
+  on.exit(unlink(c(script, log, dir), recursive = TRUE), add = TRUE)
+  writeLines(c(
+    sprintf(".libPaths(%s)", kv_deparse(.libPaths())),
+    sprintf("dir <- %s; dir.create(dir)", kv_deparse(dir)),
+    "df <- data.frame(id = 1:3, score = c(0.5, 1, 2), name = c('a', 'b', 'c'))",
+    "try_save <- function(label, expr) {",
+    "  ok <- tryCatch({ force(expr); TRUE }, error = function(e) { cat('FAIL', label, ':', conditionMessage(e), '\\n'); FALSE })",
+    "  if (ok) cat('OK', label, '\\n')",
+    "}",
+    "try_save('plot (HTML)', {",
+    "  f <- file.path(dir, 'plot.html')",
+    "  kits::kits_save_plot(plotly::plot_ly(df, x = ~id, y = ~score, type = 'scatter', mode = 'lines'), f)",
+    "  stopifnot(file.size(f) > 1e6, !dir.exists(file.path(dir, 'plot_files')))",
+    "})",
+    "try_save('CSV', readr::write_excel_csv(df, file.path(dir, 'a.csv')))",
+    "try_save('csv.gz', readr::write_csv(df, file.path(dir, 'a.csv.gz')))",
+    "try_save('SAV', haven::write_sav(df, file.path(dir, 'a.sav')))",
+    "try_save('zip', zip::zip(file.path(dir, 'a.zip'), file.path(dir, 'a.csv'), mode = 'cherry-pick'))"
+  ), script)
+  system2(kv_rscript(), shQuote(script), stdout = log, stderr = log)
+  lines <- readLines(log, warn = FALSE, encoding = "UTF-8")
+  ok <- sub("^OK ", "", grep("^OK ", lines, value = TRUE))
+  fail <- sub("^FAIL ", "", grep("^FAIL ", lines, value = TRUE))
+  if (length(fail) == 0 && length(ok) == 5) {
+    kv_item("Saving files", "ok", paste(trimws(ok), collapse = ", "))
+  } else {
+    if (length(fail) == 0) fail <- kv_log_errors(lines)
+    hint <- if (any(grepl("pandoc", fail))) "\n    \u2192 run kitverse::kitverse_pandoc()" else ""
+    kv_item("Saving files", "fail", paste0(paste(trimws(fail), collapse = "\n    "), hint))
+  }
 }
 
 #' Load packages in a separate R; returns the error messages (empty when all load)

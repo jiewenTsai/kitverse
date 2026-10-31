@@ -1,3 +1,24 @@
+# kitverse 0.4.0
+
+## Changes you can see
+
+* kitverse installs **pandoc** when R cannot find one. kitsUI saves plots as one html file, which
+  needs pandoc; RStudio and Quarto come with it, but a computer with only R has none, so the plot
+  downloads did not work in the local version. `kitverse_update()` (and `install.R`) now
+  downloads pandoc 3.7.0.2 into kitverse's data folder and sets `RSTUDIO_PANDOC` in `~/.Renviron`,
+  so every new R session finds it, however the app is started. New `kitverse_pandoc()` does this
+  on its own. Pandoc comes from its GitHub release files (not the GitHub API).
+* `kitverse_check()` has three new items: **Pandoc**; **Saving files**, which saves one file of
+  each kind the apps offer (a plot as html the way kitsUI does, CSV, csv.gz, SAV, zip); and
+  **PNG plots (optional)** for `kits::kits_save_plot(png = )`, which needs webshot2 and Chrome but
+  is not used by the apps.
+
+## Under the hood
+
+* Quarto is not needed: kitsUI only looks in the RStudio and Quarto folders to find their pandoc.
+  kitJoin and kitDesign call no outside programs; zip, SAV and CSV come from R packages.
+* `Imports: rmarkdown` (htmlwidgets finds pandoc through it).
+
 # kitverse 0.3.0
 
 ## Changes you can see

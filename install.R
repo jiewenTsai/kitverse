@@ -7,7 +7,8 @@
 #    install.packages() then asks questions or fails);
 # 2. installs kitverse and every package it needs from r-universe (pre-built on Windows and
 #    macOS, so no Rtools or Xcode; on Ubuntu/Debian, pre-built from Posit Package Manager);
-# 3. updates packages that are installed but too old, then checks this computer (it really
+# 3. updates packages that are installed but too old, installs pandoc when R has none (saving
+#    plots needs it), then checks this computer (it saves one file of each kind and really
 #    starts kitsUI and kitJoin).
 #
 # Offline repository at the workshop: Sys.setenv(KITVERSE_REPO = "file:///...",

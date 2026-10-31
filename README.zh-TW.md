@@ -24,7 +24,8 @@
 
    第一次約 3–10 分鐘。最後會印出一張檢查表，全部是 ✓ 就好了；有 ✗ 的話，請把畫面截圖給助教。
 
-Windows 與 macOS 不用裝 Rtools 或 Xcode：所有套件都是編好的版本。
+Windows 與 macOS 不用裝 Rtools 或 Xcode：所有套件都是編好的版本。也不用裝 RStudio 或 Quarto：
+R 找不到 pandoc（存圖檔要用）時，kitverse 會自己裝。
 
 <details>
 <summary>不想用 source()：自己裝</summary>
@@ -58,7 +59,7 @@ run_kitjoin()       # 資料處理工具（kitJoin 的函式）
 ```
 
 ```
-── Attaching core kitverse packages ─────────────────────────── kitverse 0.3.0 ──
+── Attaching core kitverse packages ─────────────────────────── kitverse 0.4.0 ──
 ✔ kits      0.25.2     ✔ kitJoin   0.7.0
 ✔ kitsUI    0.6.0      ✔ kitDesign 0.5.0
 ── Conflicts ─────────────────────────────────────────── kitverse_conflicts() ──
