@@ -1,3 +1,8 @@
+# kitverse 0.4.4
+
+* Needs kitDesign 0.7.0, kitsUI 0.8.3 and kitJoin 0.7.5. kitDesign 0.7.0 only adds components
+  (`kit_dt()`, `kit_scope_bar()`, for kitItemBank 0.2.0); nothing changes on screen.
+
 # kitverse 0.4.3
 
 * Needs kitDesign 0.6.1, kitsUI 0.8.2 and kitJoin 0.7.4: in kitsUI, 「用這一回合的固定檔開始下一回合」
