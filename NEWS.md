@@ -1,3 +1,9 @@
+# kitverse 0.4.5
+
+* Needs kitDesign 0.7.1, kitsUI 0.8.4 and kitJoin 0.7.6. The app headers list the main packages first
+  and the date last, each version with a "v": "kitsUI v0.8.4 · kits v0.25.2 · 2026-11-02",
+  "kitJoin v0.7.6 · 2026-11-02".
+
 # kitverse 0.4.4
 
 * Needs kitDesign 0.7.0, kitsUI 0.8.3 and kitJoin 0.7.5. kitDesign 0.7.0 only adds components
