@@ -9,7 +9,8 @@
 #    （如果 Windows 問「是否允許變更」，按「是」）；
 # 2. 用這個 R 執行 kitverse 的 install.R：裝 kitverse 與它需要的套件（r-universe 已編譯好的版本，
 #    不用 Rtools）、裝 pandoc、檢查這台電腦（真的開一次兩個 app）；
-# 3. install.R 最後在桌面建兩個捷徑（kitverse_shortcuts()）：雙擊就開 app，不需要 RStudio。
+# 3. install.R 最後在桌面建捷徑（kitverse_shortcuts()）：兩個 app 各一個，雙擊就開，不需要 RStudio；
+#    另一個「KIT 工具更新」雙擊就把套件更新到最新版。
 #
 # 再跑一次沒有關係：R 夠新就不會重裝，套件夠新就不會重抓。
 #
@@ -105,5 +106,6 @@
   Say ''
   Say '=== 完成 ===' 'Green'
   Say '桌面上有兩個捷徑：「KIT 量尺建構工具」「KIT 資料處理工具」。雙擊就會開啟。' 'Green'
+  Say '要更新時，雙擊桌面的「KIT 工具更新」（先關掉 app 的黑色視窗）。' 'Green'
   Say '使用時會有一個黑色視窗，app 開著時不要關它；關掉黑色視窗就會關閉 app。' 'Green'
 }

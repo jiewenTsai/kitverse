@@ -25,9 +25,12 @@ plus every package they need (about 90). RStudio is not needed.
    ```
 
 3. Wait until it finishes (5–15 minutes the first time). If Windows asks to allow changes, choose Yes.
-4. Two shortcuts appear on the desktop, named after the tools in Chinese (kitsUI and kitJoin).
+4. Shortcuts appear on the desktop, named in Chinese: one for kitsUI and one for kitJoin.
    Double-click one to start that app; no RStudio needed. A black window stays open while the app runs;
    closing it stops the app.
+5. **Updating**: double-click the third shortcut ("KIT tools update", in Chinese) after closing the apps.
+   It updates kitverse and every package to the newest version and remakes the shortcuts; press Enter to
+   close it. The app shortcuts never update by themselves.
 
 It finds R (4.2 or newer) and installs the latest R from CRAN when there is none or it is too old; runs
 `install.R` below; and makes the desktop shortcuts (`kitverse::kitverse_shortcuts()`; run it again after

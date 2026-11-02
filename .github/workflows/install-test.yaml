@@ -39,7 +39,7 @@ jobs:
 
   # What a Windows participant does: paste one line in PowerShell. Installs the newest R even
   # though the runner has one (KITVERSE_INSTALL_R), runs this branch's install.R, then checks the
-  # desktop shortcuts and starts an app the way a shortcut does.
+  # desktop shortcuts and starts each app the way its shortcut does.
   windows-script:
     runs-on: windows-latest
     name: windows/install.ps1
@@ -70,7 +70,7 @@ jobs:
           $desk = [Environment]::GetFolderPath('Desktop')
           $links = Get-ChildItem $desk -Filter 'KIT *.lnk'
           $links | ForEach-Object { $_.Name }
-          if ($links.Count -ne 2) { throw "expected 2 shortcuts on $desk" }
+          if ($links.Count -ne 3) { throw "expected 3 shortcuts on $desk" }
           $sh = New-Object -ComObject WScript.Shell
           foreach ($f in $links) {
             $l = $sh.CreateShortcut($f.FullName)
@@ -86,6 +86,7 @@ jobs:
           $port = 5101
           foreach ($f in Get-ChildItem $desk -Filter 'KIT *.lnk') {
             $l = $sh.CreateShortcut($f.FullName)
+            if ($l.Arguments -notmatch '::run_') { continue }   # the update shortcut
             # The same command, without opening a browser, on a known port
             $arg = $l.Arguments -replace '\(\)"$', "(port = $port, launch.browser = FALSE)`""
             $p = Start-Process $l.TargetPath -ArgumentList $arg -PassThru

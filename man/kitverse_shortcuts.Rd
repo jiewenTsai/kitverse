@@ -2,7 +2,7 @@
 % Please edit documentation in R/shortcuts.R
 \name{kitverse_shortcuts}
 \alias{kitverse_shortcuts}
-\title{Make desktop shortcuts for the two apps}
+\title{Make desktop shortcuts for the two apps and for updating}
 \usage{
 kitverse_shortcuts(dir = NULL)
 }
@@ -19,6 +19,10 @@ one starts that app with this R and opens it in the browser; no RStudio is neede
 console window stays open while the app runs: closing it stops the app.
 }
 \details{
+A third shortcut ("KIT tools update", in Chinese) installs the newest kitverse, then updates
+every package to its newest version (\code{kitverse_update(all = TRUE)}) and remakes the shortcuts.
+It waits for Enter at the end so the result can be read. Close the apps before updating.
+
 Run it again after installing a new version of R, so the shortcuts use the new R. The Windows
 installer (\code{windows/install.ps1} in the kitverse repository) and \code{install.R} call it at the end.
 For now only Windows is supported; elsewhere it does nothing and says how to start the apps.

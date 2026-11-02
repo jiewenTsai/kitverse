@@ -1,3 +1,12 @@
+# kitverse 0.5.1
+
+* A third desktop shortcut, "KIT 工具更新" (KIT tools update): double-click it (with the apps closed) to
+  install the newest kitverse, update every package to its newest version (`kitverse_update(all = TRUE)`)
+  and remake the shortcuts. The window waits for Enter so the result can be read. The app shortcuts never
+  update by themselves.
+* `windows/install.ps1`: only `R-x.y.z` folders count when looking for R (another folder such as `bin` next
+  to them printed an error).
+
 # kitverse 0.5.0
 
 * Windows installer: `irm https://raw.githubusercontent.com/jiewenTsai/kitverse/main/windows/install.ps1 | iex`
