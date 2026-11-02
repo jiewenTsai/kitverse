@@ -140,19 +140,27 @@ ktv_shortcut_ps <- function(apps, rscript, dir = NULL) {
   rscript <- win(normalizePath(rscript, winslash = "/", mustWork = FALSE))
   icon <- file.path(dirname(rscript), "Rgui.exe")
   folder <- if (is.null(dir)) "[Environment]::GetFolderPath('Desktop')" else q(win(dir))
+  # WScript.Shell saves a shortcut only under a name the system code page can write (on an English
+  # Windows, Chinese names fail: "Unable to save shortcut"). So it saves under an ASCII name and
+  # PowerShell, which handles any name, renames the file.
   one <- function(a) {
     c(
-      sprintf("$l = $sh.CreateShortcut((Join-Path $dir %s))", q(paste0(a$name, ".lnk"))),
+      "$tmp = Join-Path $dir 'kitverse-shortcut.lnk'",
+      "$l = $sh.CreateShortcut($tmp)",
       sprintf("$l.TargetPath = %s", q(rscript)),
       sprintf("$l.Arguments = %s", q(sprintf('-e "%s"', a$expr))),
       "$l.WorkingDirectory = $env:USERPROFILE",
       sprintf("if (Test-Path %s) { $l.IconLocation = %s }", q(win(icon)), q(paste0(win(icon), ",0"))),
       sprintf("$l.Description = %s", q(a$tip)),
       "$l.Save()",
-      "$l.FullName"
+      sprintf("$final = Join-Path $dir %s", q(paste0(a$name, ".lnk"))),
+      "Move-Item -LiteralPath $tmp -Destination $final -Force",
+      "$final"
     )
   }
   c("$ErrorActionPreference = 'Stop'",
+    # The paths are printed for R to read: UTF-8, whatever the system code page
+    "[Console]::OutputEncoding = [Text.Encoding]::UTF8",
     sprintf("$dir = %s", folder),
     "if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir | Out-Null }",
     "$sh = New-Object -ComObject WScript.Shell",

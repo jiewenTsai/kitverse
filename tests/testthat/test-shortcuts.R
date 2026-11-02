@@ -1,7 +1,11 @@
 test_that("ktv_shortcut_ps() makes a shortcut per app and one for updating, all running this R's Rscript", {
   ps <- ktv_shortcut_ps(ktv_shortcut_apps(), rscript = "C:/Program Files/R/R-4.6.2/bin/x64/Rscript.exe")
-  expect_match(ps[2], "GetFolderPath('Desktop')", fixed = TRUE)
+  expect_match(ps[3], "GetFolderPath('Desktop')", fixed = TRUE)
   expect_equal(sum(grepl("CreateShortcut", ps, fixed = TRUE)), 3)
+  # Saved under an ASCII name, then renamed (Chinese names fail on an English Windows)
+  expect_equal(sum(ps == "$l = $sh.CreateShortcut($tmp)"), 3)
+  expect_equal(sum(grepl("^Move-Item -LiteralPath \\$tmp", ps)), 3)
+  expect_true("[Console]::OutputEncoding = [Text.Encoding]::UTF8" %in% ps)
   expect_true("$l.TargetPath = 'C:\\Program Files\\R\\R-4.6.2\\bin\\x64\\Rscript.exe'" %in% ps)
   expect_true("$l.Arguments = '-e \"kitsUI::run_kitsui()\"'" %in% ps)
   expect_true("$l.Arguments = '-e \"kitJoin::run_kitjoin()\"'" %in% ps)
@@ -18,7 +22,7 @@ test_that("ktv_shortcut_ps() makes a shortcut per app and one for updating, all 
 test_that("ktv_shortcut_ps() quotes paths for PowerShell and can use another folder", {
   ps <- ktv_shortcut_ps(ktv_shortcut_apps(), rscript = "C:/Users/O'Brien/R/bin/Rscript.exe",
                         dir = "D:/kit shortcuts")
-  expect_equal(ps[2], "$dir = 'D:\\kit shortcuts'")
+  expect_equal(ps[3], "$dir = 'D:\\kit shortcuts'")
   expect_true("$l.TargetPath = 'C:\\Users\\O''Brien\\R\\bin\\Rscript.exe'" %in% ps)
 })
 

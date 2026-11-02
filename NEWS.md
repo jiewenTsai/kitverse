@@ -1,3 +1,10 @@
+# kitverse 0.5.5
+
+* `kitverse_shortcuts()` works on a Windows whose system language is not Chinese: the shortcuts are saved
+  under an ASCII name and then renamed (Windows' shortcut maker cannot save a Chinese name there, "Unable
+  to save shortcut"), and the paths come back to R as UTF-8. Found by the clean-Windows install test, where
+  installing R and every package took about one minute.
+
 # kitverse 0.5.4
 
 R that has become too old. r-universe and CRAN build Windows packages only for CRAN's current and previous R
