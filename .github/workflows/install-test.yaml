@@ -78,7 +78,10 @@ jobs:
             Copy-Item -LiteralPath $f.FullName -Destination $copy -Force
             $l = $sh.CreateShortcut($copy)
             "$($f.Name): $($l.TargetPath) $($l.Arguments)"
-            if ($l.TargetPath -ne $env:RSCRIPT) { throw "shortcut points at $($l.TargetPath)" }
+            # This R's Rscript.exe (bin\x64\Rscript.exe on 64-bit R, next to bin\Rscript.exe)
+            $rhome = Split-Path (Split-Path $env:RSCRIPT)
+            if (-not $l.TargetPath.StartsWith($rhome) -or -not (Test-Path $l.TargetPath) -or
+                (Split-Path $l.TargetPath -Leaf) -ne 'Rscript.exe') { throw "shortcut points at $($l.TargetPath)" }
           }
 
       - name: The command in each shortcut starts its app
