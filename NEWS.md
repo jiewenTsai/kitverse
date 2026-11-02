@@ -1,3 +1,9 @@
+# kitverse 0.4.6
+
+* `R CMD check` has no NOTE: kitverse imports the core packages only so that installing kitverse installs
+  them, and the check wanted each of them used in the code. An internal function that is never called now
+  names one function from each (`kv_imports()`), so loading kitverse still loads none of them.
+
 # kitverse 0.4.5
 
 * Needs kitDesign 0.7.1, kitsUI 0.8.4 and kitJoin 0.7.6. The app headers list the main packages first
