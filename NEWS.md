@@ -1,3 +1,12 @@
+# kitverse 0.5.3
+
+* The update shortcut and `install.R` install kitverse only when the repository has a newer version: a
+  newer kitverse installed from GitHub was replaced by the older one on r-universe, which had no
+  `kitverse_shortcuts()`, and the update stopped with an error.
+* The update shortcut skips remaking the shortcuts when the installed kitverse cannot make them.
+* `kitverse_pandoc()`: when the download fails (for example "SSL connect error", which some antivirus
+  programs cause), Windows tries again with its own connection (wininet), and the message says what to do.
+
 # kitverse 0.5.2
 
 * `kitverse_pandoc()` (and so `kitverse_update()` and the update shortcut) uses the pandoc that RStudio or

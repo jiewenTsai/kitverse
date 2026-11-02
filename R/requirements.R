@@ -34,6 +34,14 @@ ktv_desc_deps <- function(pkg, lib.loc = NULL) {
   ktv_parse_deps(d)
 }
 
+#' The version of a package in the repositories (NA when it is not there or they cannot be read)
+#' @noRd
+ktv_repo_version <- function(pkg, repos) {
+  ap <- tryCatch(suppressWarnings(utils::available.packages(repos = repos)), error = function(e) NULL)
+  if (is.null(ap) || !pkg %in% rownames(ap)) return(NA_character_)
+  unname(ap[pkg, "Version"])
+}
+
 #' The installed version (NA when not installed)
 #' @noRd
 ktv_installed_version <- function(pkg, lib.loc = NULL) {

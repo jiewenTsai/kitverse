@@ -58,3 +58,12 @@ test_that("kitverse_repos() can be pointed at another repository", {
   on.exit(options(old))
   expect_equal(kitverse_repos(), c(kitverse = "file:///usb/repo", CRAN = "https://cran.example"))
 })
+
+test_that("ktv_repo_version() reads a version from a repository, NA when the package is not there", {
+  repo <- tempfile("repo-")
+  dir.create(file.path(repo, "src", "contrib"), recursive = TRUE)
+  writeLines(c("Package: kitFake", "Version: 9.9.9", ""), file.path(repo, "src", "contrib", "PACKAGES"))
+  r <- paste0("file:///", sub("^/", "", normalizePath(repo, winslash = "/")))
+  expect_equal(ktv_repo_version("kitFake", c(x = r)), "9.9.9")
+  expect_true(is.na(ktv_repo_version("notThere", c(x = r))))
+})

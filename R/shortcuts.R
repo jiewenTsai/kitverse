@@ -84,11 +84,21 @@ ktv_shortcut_update <- function() {
   say("== KIT \u5de5\u5177\u66f4\u65b0\uff08\u8acb\u5148\u95dc\u6389\u6240\u6709 KIT app \u7684\u9ed1\u8272\u8996\u7a97\uff09")
   # 原文：== 1/2 更新 kitverse
   say("== 1/2 \u66f4\u65b0 kitverse")
-  ktv_install("kitverse", lib = ktv_user_library(), repos = kitverse_repos())
+  repos <- kitverse_repos()
+  have <- ktv_installed_version("kitverse")
+  latest <- ktv_repo_version("kitverse", repos)
+  # 只在套件庫的版本比較新時才裝（從 GitHub 裝的新版不會被換回舊版）
+  if (is.na(have) || (!is.na(latest) && package_version(latest) > package_version(have))) {
+    ktv_install("kitverse", lib = ktv_user_library(), repos = repos)
+  } else {
+    # 原文： 已經是最新版
+    say("   kitverse ", have, " \u5df2\u7d93\u662f\u6700\u65b0\u7248")
+  }
   # 原文：== 2/2 更新其他套件、重建桌面捷徑
   say("== 2/2 \u66f4\u65b0\u5176\u4ed6\u5957\u4ef6\u3001\u91cd\u5efa\u684c\u9762\u6377\u5f91")
-  status <- system2(rscript, c("-e", shQuote(
-    "kitverse::kitverse_update(all = TRUE); kitverse::kitverse_shortcuts()")))
+  status <- system2(rscript, c("-e", shQuote(paste(
+    "kitverse::kitverse_update(all = TRUE);",
+    "if ('kitverse_shortcuts' %in% getNamespaceExports('kitverse')) kitverse::kitverse_shortcuts()"))))
   say("")
   if (identical(status, 0L)) {
     # 原文：更新完成。

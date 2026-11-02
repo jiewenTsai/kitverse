@@ -47,16 +47,28 @@ kitverse_pandoc <- function(force = FALSE) {
       "https://github.com/jgm/pandoc/releases/download/", ktv_pandoc_version()))
     ktv_say("Installing pandoc ", ktv_pandoc_version(), " (needed to save plots; about 20-40 MB)")
     archive <- file.path(tempdir(), asset)
-    ok <- tryCatch({
-      old <- options(timeout = max(600, getOption("timeout")))
-      on.exit(options(old), add = TRUE)
-      utils::download.file(paste0(base, "/", asset), archive, mode = "wb", quiet = TRUE)
-      TRUE
-    }, error = function(e) {
-      ktv_say("\u2716 Could not download pandoc: ", conditionMessage(e))
-      FALSE
-    })
-    if (!ok) return(invisible(NULL))
+    old <- options(timeout = max(600, getOption("timeout")))
+    on.exit(options(old), add = TRUE)
+    # Some antivirus programs or networks break libcurl's secure connection; Windows' own
+    # (wininet) uses the system's certificates and proxy settings, so try it next
+    methods <- if (.Platform$OS.type == "windows") c("libcurl", "wininet") else "libcurl"
+    ok <- FALSE
+    for (m in methods) {
+      err <- tryCatch({
+        suppressWarnings(utils::download.file(paste0(base, "/", asset), archive, mode = "wb",
+                                              quiet = TRUE, method = m))
+        NULL
+      }, error = function(e) conditionMessage(e))
+      if (is.null(err)) {
+        ok <- TRUE
+        break
+      }
+    }
+    if (!ok) {
+      ktv_say("\u2716 Could not download pandoc (", err, "). Saving plots needs it; ",
+              "run kitverse::kitverse_update() again later (or install RStudio, which includes it).")
+      return(invisible(NULL))
+    }
     unlink(dir, recursive = TRUE)
     dir.create(dir, recursive = TRUE, showWarnings = FALSE)
     if (grepl("\\.zip$", asset)) utils::unzip(archive, exdir = dir) else utils::untar(archive, exdir = dir)

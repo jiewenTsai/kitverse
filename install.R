@@ -44,7 +44,15 @@ local({
   lib <- .libPaths()[1]
 
   message("== 1/4 Installing kitverse (the first time takes about 3-10 minutes; please keep R open)")
-  install.packages("kitverse", lib = lib, repos = repos)
+  # Only when the repository has a newer kitverse (a newer one installed from GitHub stays)
+  have <- tryCatch(as.character(utils::packageVersion("kitverse")), error = function(e) NA_character_)
+  ap <- tryCatch(utils::available.packages(repos = repos), error = function(e) NULL)
+  latest <- if (!is.null(ap) && "kitverse" %in% rownames(ap)) ap["kitverse", "Version"] else NA_character_
+  if (is.na(have) || is.na(latest) || package_version(latest) > package_version(have)) {
+    install.packages("kitverse", lib = lib, repos = repos)
+  } else {
+    message("   kitverse ", have, " is already installed (the repository has ", latest, ")")
+  }
   if (!requireNamespace("kitverse", quietly = TRUE)) {
     stop("kitverse was not installed. Check the internet connection and paste the line again; ",
          "if it still fails, send a screenshot to the workshop assistants.", call. = FALSE)
