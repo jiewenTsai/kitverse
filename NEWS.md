@@ -1,3 +1,9 @@
+# kitverse 0.5.2
+
+* `kitverse_pandoc()` (and so `kitverse_update()` and the update shortcut) uses the pandoc that RStudio or
+  Quarto installed before downloading one. R started outside RStudio (the desktop shortcuts) did not know
+  about RStudio's pandoc and downloaded 20–40 MB that the computer already had.
+
 # kitverse 0.5.1
 
 * A third desktop shortcut, "KIT 工具更新" (KIT tools update): double-click it (with the apps closed) to

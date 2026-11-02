@@ -14,9 +14,11 @@ The folder that holds pandoc (invisibly), or \code{NULL} when nothing could be i
 }
 \description{
 Saving a plot as one html file (the plot downloads in kitsUI) needs pandoc. RStudio and Quarto
-come with it; a computer with only R has none. When R cannot find pandoc, this downloads it
-(about 20–40 MB) into kitverse's data folder and adds \code{RSTUDIO_PANDOC} to the user's
-\verb{~/.Renviron}, so every new R session finds it. \code{\link[=kitverse_update]{kitverse_update()}} calls this.
+come with it, but R started outside RStudio does not know where; a computer with only R has none.
+When R cannot find pandoc, this first looks where RStudio and Quarto are usually installed and
+uses their pandoc; only when there is none does it download pandoc (about 20–40 MB) into
+kitverse's data folder. Either way it adds \code{RSTUDIO_PANDOC} to the user's \verb{~/.Renviron}, so every
+new R session finds it. \code{\link[=kitverse_update]{kitverse_update()}} calls this.
 }
 \details{
 \code{options(kitverse.pandoc_url = )} replaces the download folder (for example an offline copy

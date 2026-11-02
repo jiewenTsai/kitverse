@@ -1,10 +1,12 @@
 # Pandoc: saving a plot as one html file needs it
 #
 # kitsUI saves plotly plots with htmlwidgets::saveWidget(selfcontained = TRUE), which calls
-# pandoc through rmarkdown. RStudio and Quarto come with pandoc; a computer with only R has none,
-# so the plot downloads do not work. kitverse_update() installs pandoc into kitverse's own data
-# folder and sets RSTUDIO_PANDOC in the user's ~/.Renviron, so every new R session finds it
-# (library(kitverse), run_kitsui(), run.bat alike).
+# pandoc through rmarkdown. RStudio and Quarto come with pandoc, but R started outside RStudio (the
+# desktop shortcuts, Rscript) does not know where; a computer with only R has none, so the plot
+# downloads do not work. kitverse_update() first looks where RStudio and Quarto keep their pandoc
+# and uses that one; only when there is none does it download pandoc into kitverse's own data
+# folder. Either way it sets RSTUDIO_PANDOC in the user's ~/.Renviron, so every new R session finds
+# it (library(kitverse), run_kitsui(), the desktop shortcuts alike).
 #
 # Pandoc comes from its GitHub release files at a fixed version: plain downloads, not the GitHub
 # API, so 80 people in one room do not hit the API limit.
@@ -14,9 +16,11 @@ ktv_pandoc_version <- function() "3.7.0.2"
 #' Install pandoc if R cannot find one
 #'
 #' Saving a plot as one html file (the plot downloads in kitsUI) needs pandoc. RStudio and Quarto
-#' come with it; a computer with only R has none. When R cannot find pandoc, this downloads it
-#' (about 20–40 MB) into kitverse's data folder and adds `RSTUDIO_PANDOC` to the user's
-#' `~/.Renviron`, so every new R session finds it. [kitverse_update()] calls this.
+#' come with it, but R started outside RStudio does not know where; a computer with only R has none.
+#' When R cannot find pandoc, this first looks where RStudio and Quarto are usually installed and
+#' uses their pandoc; only when there is none does it download pandoc (about 20–40 MB) into
+#' kitverse's data folder. Either way it adds `RSTUDIO_PANDOC` to the user's `~/.Renviron`, so every
+#' new R session finds it. [kitverse_update()] calls this.
 #'
 #' `options(kitverse.pandoc_url = )` replaces the download folder (for example an offline copy
 #' at the workshop); it must hold the same file names as the pandoc GitHub release.
@@ -30,6 +34,8 @@ kitverse_pandoc <- function(force = FALSE) {
   if (!force && ktv_pandoc_found()) return(invisible(ktv_pandoc_dir()))
   dir <- ktv_pandoc_home()
   bin <- ktv_pandoc_bin(dir)
+  # RStudio's or Quarto's pandoc, when R does not know about it (no download needed)
+  if (is.null(bin) && !force) bin <- ktv_pandoc_existing()
   if (is.null(bin)) {
     asset <- ktv_pandoc_asset()
     if (is.null(asset)) {
@@ -90,6 +96,46 @@ ktv_pandoc_dir <- function() {
   if (!ktv_pandoc_found()) return("")
   if (requireNamespace("rmarkdown", quietly = TRUE)) return(dirname(rmarkdown::pandoc_exec()))
   dirname(Sys.which("pandoc"))
+}
+
+#' Pandoc that RStudio or Quarto installed (NULL when there is none)
+#' @param dirs Folders to look in, first match wins.
+#' @noRd
+ktv_pandoc_existing <- function(dirs = ktv_pandoc_known_dirs()) {
+  exe <- if (.Platform$OS.type == "windows") "pandoc.exe" else "pandoc"
+  hits <- file.path(dirs, exe)
+  hits <- hits[file.exists(hits)]
+  if (length(hits) == 0) NULL else hits[1]
+}
+
+#' Where RStudio and Quarto keep pandoc (newer layouts first)
+#' @noRd
+ktv_pandoc_known_dirs <- function(sysname = Sys.info()[["sysname"]]) {
+  quarto <- Sys.which("quarto")
+  on_path <- if (nzchar(quarto)) file.path(dirname(quarto), "tools") else character(0)
+  arch <- c("aarch64", "x86_64")
+  switch(sysname,
+    Windows = {
+      roots <- unique(c(Sys.getenv("ProgramFiles"), file.path(Sys.getenv("LOCALAPPDATA"), "Programs")))
+      roots <- roots[nzchar(roots)]
+      c(file.path(roots, "RStudio", "resources", "app", "bin", "quarto", "bin", "tools"),
+        file.path(roots, "RStudio", "bin", "quarto", "bin", "tools"),
+        file.path(roots, "RStudio", "bin", "pandoc"),
+        file.path(roots, "Quarto", "bin", "tools"),
+        on_path)
+    },
+    Darwin = {
+      rs <- "/Applications/RStudio.app/Contents"
+      c(file.path(rs, "Resources", "app", "quarto", "bin", "tools", arch),
+        file.path(rs, "Resources", "app", "quarto", "bin", "tools"),
+        file.path(rs, "MacOS", "quarto", "bin", "tools"),
+        file.path("/Applications/quarto/bin/tools", arch),
+        "/Applications/quarto/bin/tools",
+        on_path)
+    },
+    c("/usr/lib/rstudio/resources/app/bin/quarto/bin/tools", "/usr/lib/rstudio/bin/quarto/bin/tools",
+      "/usr/lib/rstudio/bin/pandoc", "/opt/quarto/bin/tools", on_path)
+  )
 }
 
 #' Where kitverse keeps its pandoc

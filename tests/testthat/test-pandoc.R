@@ -26,3 +26,28 @@ test_that("ktv_pandoc_bin() finds pandoc inside an unpacked release", {
   expect_match(ktv_pandoc_bin(d), paste0("bin/", exe, "$"))
   expect_null(ktv_pandoc_bin(tempfile()))
 })
+
+test_that("ktv_pandoc_existing() finds RStudio's or Quarto's pandoc, first folder first", {
+  exe <- if (.Platform$OS.type == "windows") "pandoc.exe" else "pandoc"
+  a <- tempfile("rstudio-tools-")
+  b <- tempfile("quarto-tools-")
+  dir.create(a)
+  dir.create(b)
+  expect_null(ktv_pandoc_existing(c(a, b)))
+  file.create(file.path(b, exe))
+  expect_equal(ktv_pandoc_existing(c(a, b)), file.path(b, exe))
+  file.create(file.path(a, exe))
+  expect_equal(ktv_pandoc_existing(c(a, b)), file.path(a, exe))
+})
+
+test_that("ktv_pandoc_known_dirs() includes RStudio's bundled Quarto tools on Windows", {
+  old <- Sys.getenv(c("ProgramFiles", "LOCALAPPDATA"), unset = NA)
+  on.exit(for (n in names(old)) {
+    if (is.na(old[[n]])) Sys.unsetenv(n) else do.call(Sys.setenv, as.list(old[n]))
+  }, add = TRUE)
+  Sys.setenv(ProgramFiles = "C:/Program Files", LOCALAPPDATA = "C:/Users/u/AppData/Local")
+  dirs <- ktv_pandoc_known_dirs("Windows")
+  expect_true("C:/Program Files/RStudio/resources/app/bin/quarto/bin/tools" %in% dirs)
+  expect_true("C:/Users/u/AppData/Local/Programs/Quarto/bin/tools" %in% dirs)
+  expect_true(any(grepl("^/Applications/RStudio.app/", ktv_pandoc_known_dirs("Darwin"))))
+})
