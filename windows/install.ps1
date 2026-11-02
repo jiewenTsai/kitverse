@@ -5,7 +5,8 @@
 #   irm https://raw.githubusercontent.com/jiewenTsai/kitverse/main/windows/install.ps1 | iex
 #
 # 它做三件事：
-# 1. 找電腦上的 R（4.2 以上）；沒有或太舊，就從 CRAN 下載最新版 R 的官方安裝檔，靜默安裝
+# 1. 找電腦上的 R；沒有，或比 CRAN 的前一版還舊（套件庫不再替它編好套件），就從 CRAN 下載
+#    最新版 R 的官方安裝檔，靜默安裝（舊的 R 留著不刪），桌面捷徑會改用新的 R
 #    （如果 Windows 問「是否允許變更」，按「是」）；
 # 2. 用這個 R 執行 kitverse 的 install.R：裝 kitverse 與它需要的套件（r-universe 已編譯好的版本，
 #    不用 Rtools）、裝 pandoc、檢查這台電腦（真的開一次兩個 app）；
@@ -62,8 +63,22 @@
     return $null
   }
 
-  function Test-RNewEnough($rscript) {
-    $out = & $rscript -e "cat(getRversion() >= '4.2.0')" 2>$null
+  # 最舊可以用的 R：CRAN 的前一版（Old-release）的 x.y。r-universe 與 CRAN 只替最新版和前一版
+  # 編好 Windows 的套件；更舊的 R 更新套件時要編譯（要 Rtools），學員的電腦沒有。連不上 CRAN 時用 4.2。
+  function Get-MinimumR {
+    try {
+      $info = (Invoke-WebRequest 'https://cloud.r-project.org/src/base/VERSION-INFO.dcf' -UseBasicParsing -TimeoutSec 20).Content
+      if ($info -match 'Old-release:\s*(\d+)\.(\d+)') { return "$($Matches[1]).$($Matches[2]).0" }
+    } catch {}
+    return '4.2.0'
+  }
+
+  function Get-RVersion($rscript) {
+    return (& $rscript -e "cat(as.character(getRversion()))" 2>$null)
+  }
+
+  function Test-RNewEnough($rscript, $minimum) {
+    $out = & $rscript -e "cat(getRversion() >= '$minimum' && getRversion() >= '4.2.0')" 2>$null
     return ($out -eq 'TRUE')
   }
 
@@ -84,16 +99,22 @@
   Say ''
   Say '=== KIT 研究工具：安裝 ===' 'Cyan'
 
-  # 1. R
+  # 1. R：沒有，或比 CRAN 的前一版舊，就裝最新版（舊的 R 留著，不刪）
+  $minimum = Get-MinimumR
   $rscript = Find-Rscript
-  if ($rscript -and -not $env:KITVERSE_INSTALL_R -and (Test-RNewEnough $rscript)) {
-    Say "✔ 已經有 R：$rscript" 'Green'
+  if ($rscript -and -not $env:KITVERSE_INSTALL_R -and (Test-RNewEnough $rscript $minimum)) {
+    Say "✔ 已經有 R $(Get-RVersion $rscript)：$rscript" 'Green'
   } else {
-    if ($rscript -and -not $env:KITVERSE_INSTALL_R) { Say "  這台電腦的 R 太舊（要 4.2 以上）：$rscript" 'Yellow' }
+    if ($rscript -and -not $env:KITVERSE_INSTALL_R) {
+      Say "  這台電腦的 R（$(Get-RVersion $rscript)）太舊了：KIT 的套件需要 $minimum 以上。" 'Yellow'
+      Say '  會另外裝最新版的 R；舊的 R 不會刪除，你其他的 R 程式照樣可以用。' 'Yellow'
+    } elseif (-not $rscript) {
+      Say '  這台電腦還沒有 R，現在幫你裝。' 'Yellow'
+    }
     try { Install-R } catch { Fail "安裝 R 失敗：$($_.Exception.Message)"; return }
     $rscript = Find-Rscript
-    if (-not $rscript -or -not (Test-RNewEnough $rscript)) { Fail 'R 裝好了，但找不到可以用的 Rscript.exe'; return }
-    Say "✔ R 已安裝：$rscript" 'Green'
+    if (-not $rscript -or -not (Test-RNewEnough $rscript $minimum)) { Fail 'R 裝好了，但找不到可以用的 Rscript.exe'; return }
+    Say "✔ R $(Get-RVersion $rscript) 已安裝：$rscript" 'Green'
   }
 
   # 2. 套件、pandoc、檢查、桌面捷徑（install.R）

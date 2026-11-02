@@ -58,7 +58,14 @@ ktv_check_items <- function(req = kitverse_requirements()) {
   } else if (.Platform$OS.type == "windows" && rv < "4.2.0") {
     ktv_item("R", "note", paste0(rv, ": works, but Chinese file names may break; the latest R is recommended"))
   } else {
-    ktv_item("R", "ok", as.character(rv))
+    rel <- ktv_r_releases()
+    if (!is.null(rel) && !ktv_r_supported(rv, rel[["oldrel"]])) {
+      ktv_item("R", "note", paste0(rv, ": older than CRAN's previous release (", rel[["oldrel"]],
+                                   "), so updates have no pre-built packages; install the latest R ",
+                                   "(on Windows: paste the install line again)"))
+    } else {
+      ktv_item("R", "ok", as.character(rv))
+    }
   }
 
   lib <- .libPaths()[1]

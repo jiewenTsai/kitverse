@@ -32,7 +32,7 @@ plus every package they need (about 90). RStudio is not needed.
    It updates kitverse and every package to the newest version and remakes the shortcuts; press Enter to
    close it. The app shortcuts never update by themselves.
 
-It finds R (4.2 or newer) and installs the latest R from CRAN when there is none or it is too old; runs
+It finds R and installs the latest R from CRAN when there is none or it is older than CRAN's previous release (pre-built packages exist only for the current and previous release; the old R stays); runs
 `install.R` below; and makes the desktop shortcuts (`kitverse::kitverse_shortcuts()`; run it again after
 installing a new R). Running it twice does no harm.
 

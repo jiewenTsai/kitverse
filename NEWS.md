@@ -1,3 +1,15 @@
+# kitverse 0.5.4
+
+R that has become too old. r-universe and CRAN build Windows packages only for CRAN's current and previous R
+release; on an older R, updating needs Rtools to compile, which participants do not have.
+
+* `windows/install.ps1` installs the latest R also when the R it finds is older than CRAN's previous release
+  (read from CRAN's `VERSION-INFO.dcf`; 4.2 when CRAN cannot be reached). The old R stays; the packages are
+  installed for the new R and the desktop shortcuts point at it.
+* The update shortcut checks the same first; when R is too old it updates nothing and says to paste the
+  install line again.
+* `kitverse_check()` notes an R older than CRAN's previous release.
+
 # kitverse 0.5.3
 
 * The update shortcut and `install.R` install kitverse only when the repository has a newer version: a

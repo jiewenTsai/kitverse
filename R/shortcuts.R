@@ -80,6 +80,23 @@ ktv_shortcut_apps <- function() {
 ktv_shortcut_update <- function() {
   say <- ktv_say
   rscript <- ktv_rscript()
+  wait <- function() invisible(readLines(file("stdin"), n = 1))
+  # R 太舊時，套件庫沒有給它的安裝檔，更新會需要編譯（要 Rtools）：先請學員換新的 R
+  rel <- ktv_r_releases()
+  if (!is.null(rel) && !ktv_r_supported(getRversion(), rel[["oldrel"]])) {
+    # 原文：這台電腦的 R（ | ）太舊了，KIT 的套件已經不提供它用的安裝檔。
+    say("\u9019\u53f0\u96fb\u8166\u7684 R\uff08", as.character(getRversion()), "\uff09\u592a\u820a\u4e86\uff0cKIT \u7684\u5957\u4ef6\u5df2\u7d93\u4e0d\u63d0\u4f9b\u5b83\u7528\u7684\u5b89\u88dd\u6a94\u3002")
+    # 原文：請重新執行一次安裝：按 Win+X 打開「終端機」或「Windows PowerShell」，貼上這一行，按 Enter：
+    say("\u8acb\u91cd\u65b0\u57f7\u884c\u4e00\u6b21\u5b89\u88dd\uff1a\u6309 Win+X \u6253\u958b\u300c\u7d42\u7aef\u6a5f\u300d\u6216\u300cWindows PowerShell\u300d\uff0c\u8cbc\u4e0a\u9019\u4e00\u884c\uff0c\u6309 Enter\uff1a")
+    say("")
+    say("  irm https://raw.githubusercontent.com/jiewenTsai/kitverse/main/windows/install.ps1 | iex")
+    say("")
+    # 原文：它會另外裝新版的 R（舊的不會刪除）、裝好 KIT 的套件，桌面捷徑也會改用新的 R。
+    say("\u5b83\u6703\u53e6\u5916\u88dd\u65b0\u7248\u7684 R\uff08\u820a\u7684\u4e0d\u6703\u522a\u9664\uff09\u3001\u88dd\u597d KIT \u7684\u5957\u4ef6\uff0c\u684c\u9762\u6377\u5f91\u4e5f\u6703\u6539\u7528\u65b0\u7684 R\u3002")
+    # 原文：按 Enter 關閉這個視窗。
+    say("\u6309 Enter \u95dc\u9589\u9019\u500b\u8996\u7a97\u3002")
+    return(wait())
+  }
   # 原文：== KIT 工具更新（請先關掉所有 KIT app 的黑色視窗）
   say("== KIT \u5de5\u5177\u66f4\u65b0\uff08\u8acb\u5148\u95dc\u6389\u6240\u6709 KIT app \u7684\u9ed1\u8272\u8996\u7a97\uff09")
   # 原文：== 1/2 更新 kitverse
@@ -109,7 +126,7 @@ ktv_shortcut_update <- function() {
   }
   # 原文：按 Enter 關閉這個視窗。
   say("\u6309 Enter \u95dc\u9589\u9019\u500b\u8996\u7a97\u3002")
-  invisible(readLines(file("stdin"), n = 1))
+  wait()
 }
 
 #' The PowerShell script that makes the shortcuts and prints each path

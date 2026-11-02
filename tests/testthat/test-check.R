@@ -37,3 +37,20 @@ test_that("ktv_apt_name() maps missing libraries to apt packages", {
   expect_equal(ktv_apt_name(list("libuv.so.1" = "fs")), "libuv1")
   expect_equal(ktv_apt_name(list("libfoo.so.2" = "x", "libuv.so.1" = "fs")), c("libfoo", "libuv1"))
 })
+
+test_that("ktv_r_supported(): R gets pre-built packages from CRAN's previous release on", {
+  expect_true(ktv_r_supported("4.5.3", "4.5.3"))
+  expect_true(ktv_r_supported("4.5.0", "4.5.3"))
+  expect_true(ktv_r_supported("4.6.2", "4.5.3"))
+  expect_false(ktv_r_supported("4.4.3", "4.5.3"))
+  expect_true(ktv_r_supported("4.10.0", "4.9.1"))
+  expect_false(ktv_r_supported("4.9.2", "4.10.1"))
+})
+
+test_that("ktv_r_releases() reads CRAN's VERSION-INFO.dcf and gives NULL when it cannot", {
+  f <- tempfile(fileext = ".dcf")
+  writeLines(c("Release: 4.6.2", "Nickname: x", "Old-release: 4.5.3"), f)
+  expect_equal(ktv_r_releases(paste0("file://", normalizePath(f, winslash = "/"))),
+               c(release = "4.6.2", oldrel = "4.5.3"))
+  expect_null(ktv_r_releases(paste0("file://", tempfile())))
+})

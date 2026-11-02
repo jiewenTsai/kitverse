@@ -93,6 +93,31 @@ ktv_install <- function(pkgs, lib, repos, quiet = FALSE) {
 #' @noRd
 ktv_deparse <- function(x) paste(deparse(x, width.cutoff = 500L), collapse = " ")
 
+#' CRAN's current and previous R release, e.g. c(release = "4.6.2", oldrel = "4.5.3")
+#'
+#' r-universe and CRAN build Windows and macOS packages for these two (and R-devel); an older R gets
+#' no new pre-built packages, so updating it would need Rtools to compile. NULL when CRAN cannot
+#' be reached.
+#' @noRd
+ktv_r_releases <- function(url = "https://cloud.r-project.org/src/base/VERSION-INFO.dcf") {
+  old <- options(timeout = 15)
+  on.exit(options(old), add = TRUE)
+  d <- tryCatch({
+    con <- url(url)
+    on.exit(close(con), add = TRUE)
+    read.dcf(con, fields = c("Release", "Old-release"))
+  }, error = function(e) NULL, warning = function(w) NULL)
+  if (is.null(d) || anyNA(d[1, ])) return(NULL)
+  c(release = unname(d[1, "Release"]), oldrel = unname(d[1, "Old-release"]))
+}
+
+#' Whether an R version still gets pre-built packages: its x.y is at least the old release's x.y
+#' @noRd
+ktv_r_supported <- function(rv, oldrel) {
+  xy <- function(v) package_version(sub("^([0-9]+\\.[0-9]+).*$", "\\1", as.character(v)))
+  xy(rv) >= xy(oldrel)
+}
+
 #' This R's Rscript
 #' @noRd
 ktv_rscript <- function() {
