@@ -14,13 +14,13 @@
 #   ✖ kitJoin::kit_app() masks kitsUI::kit_app()
 #   ℹ Start an app: run_kitsui() or run_kitjoin(). Check this computer: kitverse_check()
 
-kv_core <- function() c("kits", "kitsUI", "kitJoin", "kitDesign")
+ktv_core <- function() c("kits", "kitsUI", "kitJoin", "kitDesign")
 
 .onAttach <- function(libname, pkgname) {
   # Only the ones not attached yet (a second library() prints nothing)
-  todo <- kv_core()[!paste0("package:", kv_core()) %in% search()]
+  todo <- ktv_core()[!paste0("package:", ktv_core()) %in% search()]
   if (length(todo) == 0) return(invisible())
-  packageStartupMessage(kv_attach_message(kv_attach(todo)))
+  packageStartupMessage(ktv_attach_message(ktv_attach(todo)))
 }
 
 #' Attach the core packages: check the versions first, library() only those that are fine
@@ -29,7 +29,7 @@ kv_core <- function() c("kits", "kitsUI", "kitJoin", "kitDesign")
 #' (`"update"`: a package is missing or too old; `"restart"`: this R session has an older
 #' version loaded than the one installed, which only a restart of R fixes).
 #' @noRd
-kv_attach <- function(pkgs = kv_core()) {
+ktv_attach <- function(pkgs = ktv_core()) {
   req <- kitverse_requirements()
   bad <- req[!req$ok, , drop = FALSE]
   out <- lapply(pkgs, function(pkg) {
@@ -38,7 +38,7 @@ kv_attach <- function(pkgs = kv_core()) {
     broken <- rbind(bad[bad$pkg == pkg, , drop = FALSE], need[!need$ok, , drop = FALSE])
     broken <- broken[!duplicated(broken$pkg), , drop = FALSE]
     # Loaded in this session at another version than the one installed (installed while loaded)
-    stale <- kv_stale_loaded(c(pkg, need$pkg))
+    stale <- ktv_stale_loaded(c(pkg, need$pkg))
     fix <- ""
     why <- if (nrow(broken) > 0) {
       fix <- "update"
@@ -58,7 +58,7 @@ kv_attach <- function(pkgs = kv_core()) {
         paste0("failed to load: ", conditionMessage(e))
       })
     }
-    data.frame(pkg = pkg, version = kv_installed_version(pkg), ok = !nzchar(why), why = why,
+    data.frame(pkg = pkg, version = ktv_installed_version(pkg), ok = !nzchar(why), why = why,
                fix = fix, stringsAsFactors = FALSE)
   })
   do.call(rbind, out)
@@ -70,10 +70,10 @@ kv_attach <- function(pkgs = kv_core()) {
 #' and reading the rest of it from the new files gives errors such as
 #' "internal error ... in R_decompress1". Only a restart of R fixes it.
 #' @noRd
-kv_stale_loaded <- function(pkgs) {
+ktv_stale_loaded <- function(pkgs) {
   pkgs <- unique(pkgs[vapply(pkgs, isNamespaceLoaded, logical(1))])
   loaded <- vapply(pkgs, function(p) as.character(getNamespaceVersion(p)), character(1))
-  installed <- vapply(pkgs, kv_installed_version, character(1))
+  installed <- vapply(pkgs, ktv_installed_version, character(1))
   keep <- !is.na(installed) & loaded != installed
   data.frame(pkg = pkgs[keep], loaded = unname(loaded[keep]), installed = unname(installed[keep]),
              stringsAsFactors = FALSE)
@@ -81,14 +81,14 @@ kv_stale_loaded <- function(pkgs) {
 
 #' The message library(kitverse) prints
 #' @noRd
-kv_attach_message <- function(res, conflicts = kitverse_conflicts(only = res$pkg[res$ok])) {
-  lines <- kv_rule(left = "Attaching core kitverse packages",
-                   right = paste("kitverse", kv_installed_version("kitverse")))
+ktv_attach_message <- function(res, conflicts = kitverse_conflicts(only = res$pkg[res$ok])) {
+  lines <- ktv_rule(left = "Attaching core kitverse packages",
+                    right = paste("kitverse", ktv_installed_version("kitverse")))
 
   # Two columns: ✔ package version (pad the plain text first, then color it)
-  mark <- ifelse(res$ok, kv_col("\u2714", "green"), kv_col("\u2716", "red"))
+  mark <- ifelse(res$ok, ktv_col("\u2714", "green"), ktv_col("\u2716", "red"))
   ver <- ifelse(is.na(res$version), "", res$version)
-  cells <- paste0(mark, " ", kv_col(formatC(res$pkg, width = -max(nchar(res$pkg))), "blue"), " ",
+  cells <- paste0(mark, " ", ktv_col(formatC(res$pkg, width = -max(nchar(res$pkg))), "blue"), " ",
                   formatC(ver, width = -max(nchar(ver))))
   if (length(cells) %% 2 == 1) cells <- c(cells, "")
   half <- length(cells) / 2
@@ -106,17 +106,17 @@ kv_attach_message <- function(res, conflicts = kitverse_conflicts(only = res$pkg
   }
 
   if (nrow(conflicts) > 0) {
-    lines <- c(lines, kv_rule(left = "Conflicts", right = "kitverse_conflicts()"),
-               kv_format_conflicts(conflicts))
+    lines <- c(lines, ktv_rule(left = "Conflicts", right = "kitverse_conflicts()"),
+               ktv_format_conflicts(conflicts))
   }
-  lines <- c(lines, paste(kv_col("\u2139", "cyan"), "Start an app: run_kitsui() or run_kitjoin().",
+  lines <- c(lines, paste(ktv_col("\u2139", "cyan"), "Start an app: run_kitsui() or run_kitjoin().",
                           "Check this computer: kitverse_check()"))
   paste(lines, collapse = "\n")
 }
 
 #' Color text with cli (plain text where the console has no colors, for example Rgui)
 #' @noRd
-kv_col <- function(x, color) {
+ktv_col <- function(x, color) {
   fun <- switch(color, green = cli::col_green, red = cli::col_red, blue = cli::col_blue,
                 cyan = cli::col_cyan, grey = cli::col_grey)
   as.character(fun(x))
@@ -124,12 +124,12 @@ kv_col <- function(x, color) {
 
 #' ── left text ──────── right text ── (as wide as the console, at most 80)
 #' @noRd
-kv_rule <- function(left, right, width = getOption("width", 80)) {
+ktv_rule <- function(left, right, width = getOption("width", 80)) {
   width <- min(width, 80)
   used <- nchar(left, type = "width") + nchar(right, type = "width") + 8
-  paste0(kv_col("\u2500\u2500", "grey"), " ", cli::style_bold(left), " ",
-         kv_col(strrep("\u2500", max(width - used, 3)), "grey"), " ", right, " ",
-         kv_col("\u2500\u2500", "grey"))
+  paste0(ktv_col("\u2500\u2500", "grey"), " ", cli::style_bold(left), " ",
+         ktv_col(strrep("\u2500", max(width - used, 3)), "grey"), " ", right, " ",
+         ktv_col("\u2500\u2500", "grey"))
 }
 
 #' Conflicts between the core packages and other attached packages
@@ -145,7 +145,7 @@ kv_rule <- function(left, right, width = getOption("width", 80)) {
 #' @examples
 #' kitverse_conflicts()
 #' @export
-kitverse_conflicts <- function(only = kv_core()) {
+kitverse_conflicts <- function(only = ktv_core()) {
   envs <- search()
   core <- paste0("package:", only)
   core <- core[core %in% envs]
@@ -174,16 +174,16 @@ kitverse_conflicts <- function(only = kv_core()) {
 
 #' @export
 print.kitverse_conflicts <- function(x, ...) {
-  if (nrow(x) == 0) cat("No conflicts.\n") else cat(kv_format_conflicts(x), sep = "\n")
+  if (nrow(x) == 0) cat("No conflicts.\n") else cat(ktv_format_conflicts(x), sep = "\n")
   invisible(x)
 }
 
 #' ✖ kits::x() masks stats::x()
 #' @noRd
-kv_format_conflicts <- function(conflicts) {
+ktv_format_conflicts <- function(conflicts) {
   vapply(seq_len(nrow(conflicts)), function(i) {
     losers <- strsplit(conflicts$losers[i], ", ", fixed = TRUE)[[1]]
-    paste0(kv_col("\u2716", "red"), " ", kv_col(paste0(conflicts$winner[i], "::", conflicts$name[i], "()"), "blue"),
+    paste0(ktv_col("\u2716", "red"), " ", ktv_col(paste0(conflicts$winner[i], "::", conflicts$name[i], "()"), "blue"),
            " masks ", paste0(losers, "::", conflicts$name[i], "()", collapse = ", "))
   }, character(1))
 }

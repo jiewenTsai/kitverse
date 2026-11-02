@@ -28,7 +28,7 @@
 # packages only so that installing kitverse installs them; library(kitverse) attaches them with
 # library() (attach.R), which the check does not see. This function is never called: it only
 # names one object from each package, so loading kitverse still loads none of them.
-kv_imports <- function() {
+ktv_imports <- function() {
   list(bslib::bs_theme, kitDesign::kit_page, kitJoin::run_kitjoin, kits::kits_item,
        kitsUI::run_kitsui, shiny::runApp)
 }

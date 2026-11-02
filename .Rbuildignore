@@ -9,3 +9,5 @@
 ^tools$
 ^.*\.tar\.gz$
 ^kitverse\.Rcheck$
+^colab$
+^windows$

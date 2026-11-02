@@ -1,3 +1,12 @@
+# kitverse 0.5.0
+
+* Windows installer: `irm https://raw.githubusercontent.com/jiewenTsai/kitverse/main/windows/install.ps1 | iex`
+  in PowerShell finds R 4.2 or newer (or installs the latest R from CRAN, silently), runs `install.R`, and
+  ends with desktop shortcuts. Participants need neither RStudio nor to type R code.
+* `kitverse_shortcuts()`: on Windows, a desktop shortcut for each app (named after the tool in Chinese),
+  running this R's `Rscript.exe -e "kitsUI::run_kitsui()"` (or `run_kitjoin()`). `install.R` calls it at the end.
+* Internal helpers are renamed from `kv_*` to `ktv_*`.
+
 # kitverse 0.4.6
 
 * `R CMD check` has no NOTE: kitverse imports the core packages only so that installing kitverse installs

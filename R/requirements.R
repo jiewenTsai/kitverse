@@ -7,13 +7,13 @@
 # overwritten.
 
 # Packages that come with R: nothing to install or check
-kv_base_pkgs <- function() {
+ktv_base_pkgs <- function() {
   c("R", rownames(utils::installed.packages(priority = "base")))
 }
 
 #' Parse DESCRIPTION dependency fields: package names and minimum versions (NA when none)
 #' @noRd
-kv_parse_deps <- function(fields) {
+ktv_parse_deps <- function(fields) {
   fields <- fields[!is.na(fields)]
   if (length(fields) == 0) {
     return(data.frame(pkg = character(0), min = character(0), stringsAsFactors = FALSE))
@@ -27,16 +27,16 @@ kv_parse_deps <- function(fields) {
 
 #' One package's DESCRIPTION dependencies (NULL when not installed)
 #' @noRd
-kv_desc_deps <- function(pkg, lib.loc = NULL) {
+ktv_desc_deps <- function(pkg, lib.loc = NULL) {
   path <- system.file("DESCRIPTION", package = pkg, lib.loc = lib.loc)
   if (!nzchar(path)) return(NULL)
   d <- read.dcf(path, fields = c("Depends", "Imports", "LinkingTo"))[1, ]
-  kv_parse_deps(d)
+  ktv_parse_deps(d)
 }
 
 #' The installed version (NA when not installed)
 #' @noRd
-kv_installed_version <- function(pkg, lib.loc = NULL) {
+ktv_installed_version <- function(pkg, lib.loc = NULL) {
   path <- system.file("DESCRIPTION", package = pkg, lib.loc = lib.loc)
   if (!nzchar(path)) return(NA_character_)
   unname(read.dcf(path, fields = "Version")[1, 1])
@@ -44,7 +44,7 @@ kv_installed_version <- function(pkg, lib.loc = NULL) {
 
 #' The higher of two minimum versions (NA means no requirement)
 #' @noRd
-kv_max_version <- function(a, b) {
+ktv_max_version <- function(a, b) {
   if (is.na(a)) return(b)
   if (is.na(b)) return(a)
   if (utils::compareVersion(a, b) >= 0) a else b
@@ -67,7 +67,7 @@ kv_max_version <- function(a, b) {
 #' req[!req$ok, ]
 #' @export
 kitverse_requirements <- function(roots = "kitverse", lib.loc = NULL) {
-  base <- kv_base_pkgs()
+  base <- ktv_base_pkgs()
   need <- list()
   queue <- roots
   seen <- character(0)
@@ -76,19 +76,19 @@ kitverse_requirements <- function(roots = "kitverse", lib.loc = NULL) {
     queue <- queue[-1]
     if (pkg %in% seen) next
     seen <- c(seen, pkg)
-    deps <- kv_desc_deps(pkg, lib.loc)
+    deps <- ktv_desc_deps(pkg, lib.loc)
     if (is.null(deps)) next
     deps <- deps[!deps$pkg %in% base, , drop = FALSE]
     for (i in seq_len(nrow(deps))) {
       p <- deps$pkg[i]
       old <- if (is.null(need[[p]])) NA_character_ else need[[p]]
-      need[[p]] <- kv_max_version(old, deps$min[i])
+      need[[p]] <- ktv_max_version(old, deps$min[i])
     }
     queue <- c(queue, setdiff(deps$pkg, seen))
   }
   pkgs <- sort(names(need))
   min <- vapply(pkgs, function(p) need[[p]], character(1), USE.NAMES = FALSE)
-  have <- vapply(pkgs, kv_installed_version, character(1), lib.loc = lib.loc, USE.NAMES = FALSE)
+  have <- vapply(pkgs, ktv_installed_version, character(1), lib.loc = lib.loc, USE.NAMES = FALSE)
   too_old <- !is.na(have) & !is.na(min) &
     mapply(function(h, m) utils::compareVersion(h, m) < 0, have, ifelse(is.na(min), "0", min),
            USE.NAMES = FALSE)

@@ -18,22 +18,22 @@
 #' if (interactive()) kitverse_check()
 #' @export
 kitverse_check <- function(apps = TRUE, timeout = 120) {
-  res <- kv_check_items()
+  res <- ktv_check_items()
   if (apps && all(res$status[res$item %in% c("Package versions", "Package loading")] == "ok")) {
-    for (app in kv_apps()) {
-      res <- rbind(res, kv_check_app(app, timeout = timeout))
+    for (app in ktv_apps()) {
+      res <- rbind(res, ktv_check_app(app, timeout = timeout))
     }
   } else if (apps) {
-    res <- rbind(res, kv_item("Start apps", "fail",
-                              "packages have problems; run kitverse::kitverse_update() first"))
+    res <- rbind(res, ktv_item("Start apps", "fail",
+                               "packages have problems; run kitverse::kitverse_update() first"))
   }
-  kv_print_check(res)
+  ktv_print_check(res)
   invisible(res)
 }
 
 #' The two apps: name, package, launcher
 #' @noRd
-kv_apps <- function() {
+ktv_apps <- function() {
   list(
     list(name = "kitsUI", pkg = "kitsUI", run = "run_kitsui"),
     list(name = "kitJoin", pkg = "kitJoin", run = "run_kitjoin")
@@ -42,60 +42,60 @@ kv_apps <- function() {
 
 #' One row of check results
 #' @noRd
-kv_item <- function(item, status, detail) {
+ktv_item <- function(item, status, detail) {
   data.frame(item = item, status = status, detail = detail, stringsAsFactors = FALSE)
 }
 
 #' The checks that do not start an app
 #' @noRd
-kv_check_items <- function(req = kitverse_requirements()) {
+ktv_check_items <- function(req = kitverse_requirements()) {
   out <- list()
   # R: the packages need 4.1 or later; on Windows, R uses UTF-8 everywhere only from 4.2
   # (Chinese file names and column names)
   rv <- getRversion()
   out[[length(out) + 1]] <- if (rv < "4.1.0") {
-    kv_item("R", "fail", paste0(rv, ": too old; install the latest R from https://cran.r-project.org"))
+    ktv_item("R", "fail", paste0(rv, ": too old; install the latest R from https://cran.r-project.org"))
   } else if (.Platform$OS.type == "windows" && rv < "4.2.0") {
-    kv_item("R", "note", paste0(rv, ": works, but Chinese file names may break; the latest R is recommended"))
+    ktv_item("R", "note", paste0(rv, ": works, but Chinese file names may break; the latest R is recommended"))
   } else {
-    kv_item("R", "ok", as.character(rv))
+    ktv_item("R", "ok", as.character(rv))
   }
 
   lib <- .libPaths()[1]
   out[[length(out) + 1]] <- if (file.access(lib, 2) == 0) {
-    kv_item("Package library", "ok", lib)
+    ktv_item("Package library", "ok", lib)
   } else {
-    kv_item("Package library", "fail",
-            paste0(lib, ": not writable; kitverse::kitverse_update() creates a personal library"))
+    ktv_item("Package library", "fail",
+             paste0(lib, ": not writable; kitverse::kitverse_update() creates a personal library"))
   }
 
   bad <- req[!req$ok, , drop = FALSE]
   out[[length(out) + 1]] <- if (nrow(bad) == 0) {
-    kv_item("Package versions", "ok", paste0("all ", nrow(req), " packages installed and new enough"))
+    ktv_item("Package versions", "ok", paste0("all ", nrow(req), " packages installed and new enough"))
   } else {
-    kv_item("Package versions", "fail",
-            paste0(paste0(bad$pkg, " ", bad$why, collapse = "; "),
-                   "\n    \u2192 run kitverse::kitverse_update()"))
+    ktv_item("Package versions", "fail",
+             paste0(paste0(bad$pkg, " ", bad$why, collapse = "; "),
+                    "\n    \u2192 run kitverse::kitverse_update()"))
   }
 
   # Load the core packages in a separate R: a failed load here would leave this session broken
-  main <- kv_core()
+  main <- ktv_core()
   out[[length(out) + 1]] <- if (nrow(bad) > 0) {
-    kv_item("Package loading", "fail", "fix the package versions above first")
+    ktv_item("Package loading", "fail", "fix the package versions above first")
   } else {
-    err <- kv_try_load(main)
+    err <- ktv_try_load(main)
     if (length(err) == 0) {
-      kv_item("Package loading", "ok",
-              paste(main, vapply(main, kv_installed_version, ""), collapse = ", "))
+      ktv_item("Package loading", "ok",
+               paste(main, vapply(main, ktv_installed_version, ""), collapse = ", "))
     } else {
-      kv_item("Package loading", "fail", paste(err, collapse = "\n    "))
+      ktv_item("Package loading", "fail", paste(err, collapse = "\n    "))
     }
   }
 
   # Updated while loaded in this R session: only a restart of R helps
-  stale <- kv_stale_loaded(req$pkg)
+  stale <- ktv_stale_loaded(req$pkg)
   if (nrow(stale) > 0) {
-    out[[length(out) + 1]] <- kv_item("This R session", "fail", paste0(
+    out[[length(out) + 1]] <- ktv_item("This R session", "fail", paste0(
       paste0(stale$pkg, " ", stale$loaded, " is loaded but ", stale$installed, " is installed",
              collapse = "; "),
       "\n    \u2192 restart R (in RStudio: Session > Restart R)"))
@@ -104,34 +104,34 @@ kv_check_items <- function(req = kitverse_requirements()) {
   # Linux: system libraries the compiled packages need (for example fs needs libuv.so.1).
   # Without them the packages still load, and the app fails only when it draws the page.
   if (Sys.info()[["sysname"]] == "Linux") {
-    miss <- kv_missing_syslibs(req$pkg)
+    miss <- ktv_missing_syslibs(req$pkg)
     out[[length(out) + 1]] <- if (length(miss) == 0) {
-      kv_item("System libraries", "ok", "everything the packages need is there")
+      ktv_item("System libraries", "ok", "everything the packages need is there")
     } else {
-      kv_item("System libraries", "fail", paste0(
+      ktv_item("System libraries", "fail", paste0(
         "missing ", paste(names(miss), collapse = ", "), " (needed by ",
         paste(unique(unlist(miss)), collapse = ", "), ")\n    \u2192 in a terminal: sudo apt install ",
-        paste(kv_apt_name(miss), collapse = " ")))
+        paste(ktv_apt_name(miss), collapse = " ")))
     }
   }
 
   # Pandoc: kitsUI's plot downloads (one html file) need it
-  out[[length(out) + 1]] <- if (kv_pandoc_found()) {
-    kv_item("Pandoc", "ok", kv_pandoc_dir())
+  out[[length(out) + 1]] <- if (ktv_pandoc_found()) {
+    ktv_item("Pandoc", "ok", ktv_pandoc_dir())
   } else {
-    kv_item("Pandoc", "fail",
-            "not found: plots cannot be downloaded\n    \u2192 run kitverse::kitverse_pandoc()")
+    ktv_item("Pandoc", "fail",
+             "not found: plots cannot be downloaded\n    \u2192 run kitverse::kitverse_pandoc()")
   }
 
   # Saving every kind of file the apps offer, in a separate R
-  if (nrow(bad) == 0) out[[length(out) + 1]] <- kv_check_saving()
+  if (nrow(bad) == 0) out[[length(out) + 1]] <- ktv_check_saving()
 
   # Optional: kits::kits_save_plot(png = ) takes a browser screenshot (not used by the apps)
   out[[length(out) + 1]] <- if (nzchar(system.file(package = "webshot2"))) {
-    kv_item("PNG plots (optional)", "ok", "webshot2 installed")
+    ktv_item("PNG plots (optional)", "ok", "webshot2 installed")
   } else {
-    kv_item("PNG plots (optional)", "note",
-            "kits_save_plot(png = ) also needs webshot2 and Chrome; the apps do not use it")
+    ktv_item("PNG plots (optional)", "note",
+             "kits_save_plot(png = ) also needs webshot2 and Chrome; the apps do not use it")
   }
 
   tmp <- tempdir()
@@ -139,19 +139,19 @@ kv_check_items <- function(req = kitverse_requirements()) {
   ok_tmp <- tryCatch({ writeLines("ok", probe); unlink(probe); TRUE }, error = function(e) FALSE,
                      warning = function(w) FALSE)
   out[[length(out) + 1]] <- if (!ok_tmp) {
-    kv_item("Temporary folder", "fail",
-            paste0(tmp, ": not writable (uploaded files and results are kept here)"))
+    ktv_item("Temporary folder", "fail",
+             paste0(tmp, ": not writable (uploaded files and results are kept here)"))
   } else if (.Platform$OS.type == "windows" && grepl("[^\\x01-\\x7F]", tmp, perl = TRUE)) {
-    kv_item("Temporary folder", "note",
-            paste0(tmp, ": the path has non-ASCII characters; tell the assistants if uploads or downloads fail"))
+    ktv_item("Temporary folder", "note",
+             paste0(tmp, ": the path has non-ASCII characters; tell the assistants if uploads or downloads fail"))
   } else {
-    kv_item("Temporary folder", "ok", tmp)
+    ktv_item("Temporary folder", "ok", tmp)
   }
 
-  out[[length(out) + 1]] <- if (kv_online("https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC")) {
-    kv_item("Internet (fonts)", "ok", "Google Fonts reachable")
+  out[[length(out) + 1]] <- if (ktv_online("https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC")) {
+    ktv_item("Internet (fonts)", "ok", "Google Fonts reachable")
   } else {
-    kv_item("Internet (fonts)", "note", "Google Fonts not reachable: the apps work, with the computer's own fonts")
+    ktv_item("Internet (fonts)", "note", "Google Fonts not reachable: the apps work, with the computer's own fonts")
   }
   do.call(rbind, out)
 }
@@ -161,7 +161,7 @@ kv_check_items <- function(req = kitverse_requirements()) {
 #' Returns a named list: names are the missing libraries (for example `libuv.so.1`),
 #' values are the packages that need them.
 #' @noRd
-kv_missing_syslibs <- function(pkgs) {
+ktv_missing_syslibs <- function(pkgs) {
   if (!nzchar(Sys.which("ldd"))) return(list())
   miss <- list()
   for (p in pkgs) {
@@ -178,7 +178,7 @@ kv_missing_syslibs <- function(pkgs) {
 
 #' System library file names to apt package names (unknown ones as they are)
 #' @noRd
-kv_apt_name <- function(miss) {
+ktv_apt_name <- function(miss) {
   known <- c("libuv.so.1" = "libuv1", "libicuuc" = "libicu-dev", "libicui18n" = "libicu-dev",
              "libxml2.so.2" = "libxml2", "libcurl.so.4" = "libcurl4", "libssl.so.3" = "libssl3",
              "libfontconfig.so.1" = "libfontconfig1", "libfreetype.so.6" = "libfreetype6",
@@ -193,7 +193,7 @@ kv_apt_name <- function(miss) {
 
 #' The useful lines of an app log: the errors (or the last lines when there are none)
 #' @noRd
-kv_log_errors <- function(lines, n = 8) {
+ktv_log_errors <- function(lines, n = 8) {
   lines <- lines[!grepl("^\\s*[0-9]+: ", lines)]  # skip the traceback
   err <- grep("error|Error|cannot|unable|not found", lines, value = TRUE)
   utils::tail(if (length(err)) err else lines, n)
@@ -204,14 +204,14 @@ kv_log_errors <- function(lines, n = 8) {
 #' The plot is saved the way kitsUI does it (kits::kits_save_plot(), one html file); tables as
 #' CSV (readr, as Excel reads it), csv.gz, SAV (haven) and zip (zip).
 #' @noRd
-kv_check_saving <- function() {
+ktv_check_saving <- function() {
   script <- tempfile("kitverse-save-", fileext = ".R")
   log <- tempfile("kitverse-save-", fileext = ".log")
   dir <- tempfile("kitverse-save-")
   on.exit(unlink(c(script, log, dir), recursive = TRUE), add = TRUE)
   writeLines(c(
-    sprintf(".libPaths(%s)", kv_deparse(.libPaths())),
-    sprintf("dir <- %s; dir.create(dir)", kv_deparse(dir)),
+    sprintf(".libPaths(%s)", ktv_deparse(.libPaths())),
+    sprintf("dir <- %s; dir.create(dir)", ktv_deparse(dir)),
     "df <- data.frame(id = 1:3, score = c(0.5, 1, 2), name = c('a', 'b', 'c'))",
     "try_save <- function(label, expr) {",
     "  ok <- tryCatch({ force(expr); TRUE }, error = function(e) { cat('FAIL', label, ':', conditionMessage(e), '\\n'); FALSE })",
@@ -227,57 +227,57 @@ kv_check_saving <- function() {
     "try_save('SAV', haven::write_sav(df, file.path(dir, 'a.sav')))",
     "try_save('zip', zip::zip(file.path(dir, 'a.zip'), file.path(dir, 'a.csv'), mode = 'cherry-pick'))"
   ), script)
-  system2(kv_rscript(), shQuote(script), stdout = log, stderr = log)
+  system2(ktv_rscript(), shQuote(script), stdout = log, stderr = log)
   lines <- readLines(log, warn = FALSE, encoding = "UTF-8")
   ok <- sub("^OK ", "", grep("^OK ", lines, value = TRUE))
   fail <- sub("^FAIL ", "", grep("^FAIL ", lines, value = TRUE))
   if (length(fail) == 0 && length(ok) == 5) {
-    kv_item("Saving files", "ok", paste(trimws(ok), collapse = ", "))
+    ktv_item("Saving files", "ok", paste(trimws(ok), collapse = ", "))
   } else {
-    if (length(fail) == 0) fail <- kv_log_errors(lines)
+    if (length(fail) == 0) fail <- ktv_log_errors(lines)
     hint <- if (any(grepl("pandoc", fail))) "\n    \u2192 run kitverse::kitverse_pandoc()" else ""
-    kv_item("Saving files", "fail", paste0(paste(trimws(fail), collapse = "\n    "), hint))
+    ktv_item("Saving files", "fail", paste0(paste(trimws(fail), collapse = "\n    "), hint))
   }
 }
 
 #' Load packages in a separate R; returns the error messages (empty when all load)
 #' @noRd
-kv_try_load <- function(pkgs) {
+ktv_try_load <- function(pkgs) {
   script <- tempfile("kitverse-load-", fileext = ".R")
   log <- tempfile("kitverse-load-", fileext = ".log")
   on.exit(unlink(c(script, log)), add = TRUE)
   writeLines(c(
-    sprintf(".libPaths(%s)", kv_deparse(.libPaths())),
-    sprintf("for (p in %s) tryCatch(suppressPackageStartupMessages(loadNamespace(p)),", kv_deparse(pkgs)),
+    sprintf(".libPaths(%s)", ktv_deparse(.libPaths())),
+    sprintf("for (p in %s) tryCatch(suppressPackageStartupMessages(loadNamespace(p)),", ktv_deparse(pkgs)),
     "  error = function(e) cat(p, ': ', conditionMessage(e), '\\n', sep = ''))"
   ), script)
-  system2(kv_rscript(), shQuote(script), stdout = log, stderr = log)
+  system2(ktv_rscript(), shQuote(script), stdout = log, stderr = log)
   out <- readLines(log, warn = FALSE, encoding = "UTF-8")
   out[nzchar(trimws(out))]
 }
 
 #' Whether a URL can be reached
 #' @noRd
-kv_online <- function(url) {
+ktv_online <- function(url) {
   h <- tryCatch(suppressWarnings(curlGetHeaders(url, timeout = 10)), error = function(e) NULL)
   !is.null(h) && attr(h, "status") < 400
 }
 
 #' Start an app in a separate R (no browser), wait for the page, then stop it
 #' @noRd
-kv_check_app <- function(app, timeout = 120) {
-  port <- kv_free_port()
+ktv_check_app <- function(app, timeout = 120) {
+  port <- ktv_free_port()
   pidfile <- tempfile("kitverse-pid-")
   log <- tempfile("kitverse-app-", fileext = ".log")
   script <- tempfile("kitverse-app-", fileext = ".R")
   on.exit(unlink(c(pidfile, script)), add = TRUE)
   writeLines(c(
-    sprintf(".libPaths(%s)", kv_deparse(.libPaths())),
-    sprintf("writeLines(as.character(Sys.getpid()), %s)", kv_deparse(pidfile)),
+    sprintf(".libPaths(%s)", ktv_deparse(.libPaths())),
+    sprintf("writeLines(as.character(Sys.getpid()), %s)", ktv_deparse(pidfile)),
     sprintf("%s::%s(launch.browser = FALSE, host = '127.0.0.1', port = %dL)", app$pkg, app$run, port)
   ), script)
   t0 <- Sys.time()
-  system2(kv_rscript(), shQuote(script), stdout = log, stderr = log, wait = FALSE)
+  system2(ktv_rscript(), shQuote(script), stdout = log, stderr = log, wait = FALSE)
   url <- sprintf("http://127.0.0.1:%d/", port)
   ok <- FALSE
   while (as.numeric(difftime(Sys.time(), t0, units = "secs")) < timeout) {
@@ -292,18 +292,18 @@ kv_check_app <- function(app, timeout = 120) {
   if (file.exists(pidfile)) tools::pskill(as.integer(readLines(pidfile, warn = FALSE)[1]))
   if (ok) {
     unlink(log)
-    kv_item(paste("Start", app$name), "ok", paste0("ready in ", secs, " s"))
+    ktv_item(paste("Start", app$name), "ok", paste0("ready in ", secs, " s"))
   } else {
-    tail_log <- kv_log_errors(readLines(log, warn = FALSE, encoding = "UTF-8"))
-    kv_item(paste("Start", app$name), "fail",
-            paste0("not ready within ", timeout, " s. Last messages:\n    ",
-                   paste(tail_log, collapse = "\n    ")))
+    tail_log <- ktv_log_errors(readLines(log, warn = FALSE, encoding = "UTF-8"))
+    ktv_item(paste("Start", app$name), "fail",
+             paste0("not ready within ", timeout, " s. Last messages:\n    ",
+                    paste(tail_log, collapse = "\n    ")))
   }
 }
 
 #' A port nobody uses
 #' @noRd
-kv_free_port <- function() {
+ktv_free_port <- function() {
   port <- tryCatch(httpuv::randomPort(), error = function(e) NULL)
   if (is.null(port)) port <- sample(49152:65000, 1)
   as.integer(port)
@@ -311,18 +311,18 @@ kv_free_port <- function() {
 
 #' Print the check results
 #' @noRd
-kv_print_check <- function(res) {
-  mark <- c(ok = kv_col("\u2714", "green"), fail = kv_col("\u2716", "red"), note = kv_col("!", "cyan"))
-  cat("\n", kv_rule(left = "Checking this computer",
-                    right = paste("kitverse", kv_installed_version("kitverse"))), "\n", sep = "")
+ktv_print_check <- function(res) {
+  mark <- c(ok = ktv_col("\u2714", "green"), fail = ktv_col("\u2716", "red"), note = ktv_col("!", "cyan"))
+  cat("\n", ktv_rule(left = "Checking this computer",
+                     right = paste("kitverse", ktv_installed_version("kitverse"))), "\n", sep = "")
   for (i in seq_len(nrow(res))) {
     cat(mark[[res$status[i]]], " ", res$item[i], ": ", res$detail[i], "\n", sep = "")
   }
   n_fail <- sum(res$status == "fail")
   if (n_fail == 0) {
-    cat(kv_col("\u2714", "green"), " All good. library(kitverse), then run_kitsui() or run_kitjoin().\n\n", sep = "")
+    cat(ktv_col("\u2714", "green"), " All good. library(kitverse), then run_kitsui() or run_kitjoin().\n\n", sep = "")
   } else {
-    cat(kv_col("\u2716", "red"), " ", n_fail, " item", if (n_fail > 1) "s", " to fix (marked \u2716 above). ",
+    cat(ktv_col("\u2716", "red"), " ", n_fail, " item", if (n_fail > 1) "s", " to fix (marked \u2716 above). ",
         "Please send a screenshot of this to the workshop assistants.\n\n", sep = "")
   }
 }

@@ -15,6 +15,24 @@
 
 ## 安裝
 
+### Windows：貼一行就好（連 R 都會裝）
+
+1. 按 **Win+X**，選「**終端機**」（Windows 11）或「**Windows PowerShell**」（Windows 10）。
+2. 貼上這一行，按 Enter：
+
+   ```powershell
+   irm https://raw.githubusercontent.com/jiewenTsai/kitverse/main/windows/install.ps1 | iex
+   ```
+
+3. 等它跑完（第一次約 5–15 分鐘）。如果 Windows 問「是否允許變更」，按「是」。
+4. 桌面上會多兩個捷徑：「**KIT 量尺建構工具**」「**KIT 資料處理工具**」。雙擊就開啟，不需要 RStudio。
+   使用時會有一個黑色視窗，app 開著時不要關它；關掉黑色視窗就會關閉 app。
+
+它會：找電腦上的 R（4.2 以上），沒有或太舊就從 CRAN 裝最新版；再執行下面的 `install.R`；最後建桌面捷徑
+（`kitverse::kitverse_shortcuts()`，換了新版 R 之後可以再執行一次）。再跑一次沒有關係。
+
+### macOS、Linux，或已經有 R
+
 1. 裝 R：<https://cran.r-project.org>（Windows、macOS 都選最新版）。
 2. 打開 R（Windows：開始選單的「R」；macOS：應用程式裡的「R」），貼上這一行，按 Enter：
 

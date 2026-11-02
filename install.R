@@ -9,7 +9,10 @@
 #    macOS, so no Rtools or Xcode; on Ubuntu/Debian, pre-built from Posit Package Manager);
 # 3. updates packages that are installed but too old, installs pandoc when R has none (saving
 #    plots needs it), then checks this computer (it saves one file of each kind and really
-#    starts kitsUI and kitJoin).
+#    starts kitsUI and kitJoin);
+# 4. on Windows, puts a shortcut for each app on the desktop (kitverse_shortcuts()).
+#
+# On Windows, windows/install.ps1 also installs R first, then runs this file.
 #
 # Offline repository at the workshop: Sys.setenv(KITVERSE_REPO = "file:///...",
 # KITVERSE_CRAN = "file:///...") first, then source() this file.
@@ -40,14 +43,18 @@ local({
   }
   lib <- .libPaths()[1]
 
-  message("== 1/3 Installing kitverse (the first time takes about 3-10 minutes; please keep R open)")
+  message("== 1/4 Installing kitverse (the first time takes about 3-10 minutes; please keep R open)")
   install.packages("kitverse", lib = lib, repos = repos)
   if (!requireNamespace("kitverse", quietly = TRUE)) {
     stop("kitverse was not installed. Check the internet connection and paste the line again; ",
          "if it still fails, send a screenshot to the workshop assistants.", call. = FALSE)
   }
-  message("== 2/3 Updating packages that are too old")
+  message("== 2/4 Updating packages that are too old")
   kitverse::kitverse_update()
-  message("== 3/3 Checking this computer")
+  message("== 3/4 Checking this computer")
   kitverse::kitverse_check()
+  if (.Platform$OS.type == "windows" && "kitverse_shortcuts" %in% getNamespaceExports("kitverse")) {
+    message("== 4/4 Desktop shortcuts")
+    kitverse::kitverse_shortcuts()
+  }
 })

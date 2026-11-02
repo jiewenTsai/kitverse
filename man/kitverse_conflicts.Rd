@@ -4,7 +4,7 @@
 \alias{kitverse_conflicts}
 \title{Conflicts between the core packages and other attached packages}
 \usage{
-kitverse_conflicts(only = kv_core())
+kitverse_conflicts(only = ktv_core())
 }
 \arguments{
 \item{only}{Only these core packages (default: all of them that are attached).}

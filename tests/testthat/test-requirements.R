@@ -16,17 +16,17 @@ withr_tempdir <- function() {
 }
 `%||%` <- function(x, y) if (is.null(x)) y else x
 
-test_that("kv_parse_deps() reads names and minimum versions", {
-  d <- kv_parse_deps(c(Depends = "R (>= 4.1.0)", Imports = "bslib (>= 0.11.0),\n    shiny, kits(>= 0.25.2)"))
+test_that("ktv_parse_deps() reads names and minimum versions", {
+  d <- ktv_parse_deps(c(Depends = "R (>= 4.1.0)", Imports = "bslib (>= 0.11.0),\n    shiny, kits(>= 0.25.2)"))
   expect_equal(d$pkg, c("R", "bslib", "shiny", "kits"))
   expect_equal(d$min, c("4.1.0", "0.11.0", NA, "0.25.2"))
-  expect_equal(nrow(kv_parse_deps(c(Imports = NA))), 0)
+  expect_equal(nrow(ktv_parse_deps(c(Imports = NA))), 0)
 })
 
-test_that("kv_max_version() keeps the higher requirement", {
-  expect_equal(kv_max_version(NA, "1.0"), "1.0")
-  expect_equal(kv_max_version("0.11.0", "0.9.1"), "0.11.0")
-  expect_equal(kv_max_version("0.11.0", NA), "0.11.0")
+test_that("ktv_max_version() keeps the higher requirement", {
+  expect_equal(ktv_max_version(NA, "1.0"), "1.0")
+  expect_equal(ktv_max_version("0.11.0", "0.9.1"), "0.11.0")
+  expect_equal(ktv_max_version("0.11.0", NA), "0.11.0")
 })
 
 test_that("kitverse_requirements() follows dependencies and flags missing and old ones", {
@@ -43,14 +43,14 @@ test_that("kitverse_requirements() follows dependencies and flags missing and ol
   expect_match(req$why[3], "not installed")
 })
 
-test_that("kv_default_cran() uses Posit Package Manager on Ubuntu only", {
+test_that("ktv_default_cran() uses Posit Package Manager on Ubuntu only", {
   skip_if_not(Sys.info()[["sysname"]] == "Linux")
   f <- tempfile()
   writeLines(c('ID=ubuntu', 'VERSION_CODENAME=noble'), f)
-  expect_equal(kv_default_cran(f), "https://packagemanager.posit.co/cran/__linux__/noble/latest")
+  expect_equal(ktv_default_cran(f), "https://packagemanager.posit.co/cran/__linux__/noble/latest")
   writeLines(c('ID=fedora', 'VERSION_CODENAME='), f)
-  expect_equal(kv_default_cran(f), "https://cloud.r-project.org")
-  expect_equal(kv_default_cran(tempfile()), "https://cloud.r-project.org")
+  expect_equal(ktv_default_cran(f), "https://cloud.r-project.org")
+  expect_equal(ktv_default_cran(tempfile()), "https://cloud.r-project.org")
 })
 
 test_that("kitverse_repos() can be pointed at another repository", {

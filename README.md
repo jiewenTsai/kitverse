@@ -15,6 +15,26 @@ plus every package they need (about 90). RStudio is not needed.
 
 ## Install
 
+### Windows: paste one line (it installs R too)
+
+1. Press **Win+X** and choose **Terminal** (Windows 11) or **Windows PowerShell** (Windows 10).
+2. Paste this line and press Enter:
+
+   ```powershell
+   irm https://raw.githubusercontent.com/jiewenTsai/kitverse/main/windows/install.ps1 | iex
+   ```
+
+3. Wait until it finishes (5–15 minutes the first time). If Windows asks to allow changes, choose Yes.
+4. Two shortcuts appear on the desktop, named after the tools in Chinese (kitsUI and kitJoin).
+   Double-click one to start that app; no RStudio needed. A black window stays open while the app runs;
+   closing it stops the app.
+
+It finds R (4.2 or newer) and installs the latest R from CRAN when there is none or it is too old; runs
+`install.R` below; and makes the desktop shortcuts (`kitverse::kitverse_shortcuts()`; run it again after
+installing a new R). Running it twice does no harm.
+
+### macOS, Linux, or R already installed
+
 1. Install R: <https://cran.r-project.org> (the latest version for Windows or macOS).
 2. Open R (Windows: "R" in the Start menu; macOS: "R" in Applications), paste this line and press Enter:
 

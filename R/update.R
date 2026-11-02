@@ -26,7 +26,7 @@
 #' if (interactive()) kitverse_update()
 #' @export
 kitverse_update <- function(all = FALSE, rounds = 4, quiet = FALSE) {
-  lib <- kv_user_library()
+  lib <- ktv_user_library()
   repos <- kitverse_repos()
   done <- character(0)
   for (i in seq_len(rounds)) {
@@ -39,29 +39,29 @@ kitverse_update <- function(all = FALSE, rounds = 4, quiet = FALSE) {
     }
     todo <- setdiff(todo, done)
     if (length(todo) == 0) break
-    kv_say("Installing or updating ", length(todo), " package", if (length(todo) > 1) "s",
-           ": ", paste(todo, collapse = ", "))
-    kv_say("(the first time can take a few minutes; please keep R open)")
-    kv_install(todo, lib = lib, repos = repos, quiet = quiet)
+    ktv_say("Installing or updating ", length(todo), " package", if (length(todo) > 1) "s",
+            ": ", paste(todo, collapse = ", "))
+    ktv_say("(the first time can take a few minutes; please keep R open)")
+    ktv_install(todo, lib = lib, repos = repos, quiet = quiet)
     done <- c(done, todo)
   }
   req <- kitverse_requirements()
   if (all(req$ok)) {
-    kv_say("\u2714 All packages are installed.")
+    ktv_say("\u2714 All packages are installed.")
     # Saving plots as html needs pandoc; a computer with only R has none
     kitverse_pandoc()
-    kv_say("Next: kitverse::kitverse_check()")
+    ktv_say("Next: kitverse::kitverse_check()")
   } else {
     bad <- req[!req$ok, , drop = FALSE]
-    kv_say("\u2716 Some packages still cannot be used: ", paste(bad$pkg, bad$why, collapse = "; "))
-    kv_say("  Check the internet connection and run kitverse::kitverse_update() again.")
+    ktv_say("\u2716 Some packages still cannot be used: ", paste(bad$pkg, bad$why, collapse = "; "))
+    ktv_say("  Check the internet connection and run kitverse::kitverse_update() again.")
   }
   invisible(done)
 }
 
 #' The personal package library: create it if needed and put it first on the library path
 #' @noRd
-kv_user_library <- function() {
+ktv_user_library <- function() {
   lib <- Sys.getenv("R_LIBS_USER")
   if (!nzchar(lib)) return(.libPaths()[1])
   lib <- path.expand(strsplit(lib, .Platform$path.sep, fixed = TRUE)[[1]][1])
@@ -73,33 +73,33 @@ kv_user_library <- function() {
 
 #' Run install.packages() in a separate R
 #' @noRd
-kv_install <- function(pkgs, lib, repos, quiet = FALSE) {
+ktv_install <- function(pkgs, lib, repos, quiet = FALSE) {
   script <- tempfile("kitverse-install-", fileext = ".R")
   on.exit(unlink(script), add = TRUE)
   writeLines(c(
     # Posit Package Manager picks the binary for this R version from the user agent
     'options(HTTPUserAgent = sprintf("R/%s R (%s)", getRversion(), paste(getRversion(), R.version[["platform"]], R.version[["arch"]], R.version[["os"]])))',
-    sprintf("options(repos = %s)", kv_deparse(repos)),
-    sprintf(".libPaths(c(%s, .libPaths()))", kv_deparse(lib)),
+    sprintf("options(repos = %s)", ktv_deparse(repos)),
+    sprintf(".libPaths(c(%s, .libPaths()))", ktv_deparse(lib)),
     sprintf("install.packages(%s, lib = %s, quiet = %s)",
-            kv_deparse(pkgs), kv_deparse(lib), if (quiet) "TRUE" else "FALSE")
+            ktv_deparse(pkgs), ktv_deparse(lib), if (quiet) "TRUE" else "FALSE")
   ), script)
-  status <- system2(kv_rscript(), shQuote(script))
-  if (!identical(status, 0L)) kv_say("(the installer reported an error; checking again below)")
+  status <- system2(ktv_rscript(), shQuote(script))
+  if (!identical(status, 0L)) ktv_say("(the installer reported an error; checking again below)")
   invisible(status)
 }
 
 #' A value as R code (for the script the other R runs)
 #' @noRd
-kv_deparse <- function(x) paste(deparse(x, width.cutoff = 500L), collapse = " ")
+ktv_deparse <- function(x) paste(deparse(x, width.cutoff = 500L), collapse = " ")
 
 #' This R's Rscript
 #' @noRd
-kv_rscript <- function() {
+ktv_rscript <- function() {
   exe <- if (.Platform$OS.type == "windows") "Rscript.exe" else "Rscript"
   file.path(R.home("bin"), exe)
 }
 
 #' Print one line (message(), so suppressMessages() can hide it)
 #' @noRd
-kv_say <- function(...) message(paste0(...))
+ktv_say <- function(...) message(paste0(...))

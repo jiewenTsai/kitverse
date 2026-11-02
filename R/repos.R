@@ -18,13 +18,13 @@
 #' @export
 kitverse_repos <- function() {
   kit <- getOption("kitverse.repo", "https://jiewentsai.r-universe.dev")
-  cran <- getOption("kitverse.cran", kv_default_cran())
+  cran <- getOption("kitverse.cran", ktv_default_cran())
   c(kitverse = kit, CRAN = cran)
 }
 
 #' The default CRAN: Posit Package Manager binaries on Ubuntu/Debian, CRAN elsewhere
 #' @noRd
-kv_default_cran <- function(os_release = "/etc/os-release") {
+ktv_default_cran <- function(os_release = "/etc/os-release") {
   cran <- "https://cloud.r-project.org"
   if (.Platform$OS.type != "unix" || Sys.info()[["sysname"]] != "Linux") return(cran)
   if (!file.exists(os_release)) return(cran)

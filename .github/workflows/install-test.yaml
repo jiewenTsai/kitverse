@@ -36,3 +36,66 @@ jobs:
           res <- kitverse::kitverse_check()
           if (any(res$status == "fail")) stop("kitverse_check() failed")
         shell: Rscript {0}
+
+  # What a Windows participant does: paste one line in PowerShell. Installs the newest R even
+  # though the runner has one (KITVERSE_INSTALL_R), runs this branch's install.R, then checks the
+  # desktop shortcuts and starts an app the way a shortcut does.
+  windows-script:
+    runs-on: windows-latest
+    name: windows/install.ps1
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run the installer the way participants do (irm | iex)
+        shell: powershell
+        env:
+          KITVERSE_INSTALL_R: "1"
+          KITVERSE_INSTALL_URL: ${{ github.workspace }}/install.R
+        run: |
+          Get-Content -Raw -Encoding UTF8 windows\install.ps1 | Invoke-Expression
+
+      - name: R is installed and found where the shortcuts will point
+        shell: powershell
+        run: |
+          $key = Get-ItemProperty 'HKLM:\SOFTWARE\R-core\R', 'HKCU:\SOFTWARE\R-core\R' -ErrorAction SilentlyContinue | Select-Object -First 1
+          $rscript = Join-Path $key.InstallPath 'bin\Rscript.exe'
+          if (-not (Test-Path $rscript)) { throw "no Rscript.exe at $rscript" }
+          & $rscript -e "cat(R.version.string, '\n'); stopifnot(getRversion() >= '4.2.0')"
+          "RSCRIPT=$rscript" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: This branch's kitverse makes the desktop shortcuts
+        shell: powershell
+        run: |
+          & $env:RSCRIPT -e "install.packages('.', repos = NULL, type = 'source'); kitverse::kitverse_shortcuts()"
+          $desk = [Environment]::GetFolderPath('Desktop')
+          $links = Get-ChildItem $desk -Filter 'KIT *.lnk'
+          $links | ForEach-Object { $_.Name }
+          if ($links.Count -ne 2) { throw "expected 2 shortcuts on $desk" }
+          $sh = New-Object -ComObject WScript.Shell
+          foreach ($f in $links) {
+            $l = $sh.CreateShortcut($f.FullName)
+            "$($f.Name): $($l.TargetPath) $($l.Arguments)"
+            if ($l.TargetPath -ne $env:RSCRIPT) { throw "shortcut points at $($l.TargetPath)" }
+          }
+
+      - name: The command in each shortcut starts its app
+        shell: powershell
+        run: |
+          $sh = New-Object -ComObject WScript.Shell
+          $desk = [Environment]::GetFolderPath('Desktop')
+          $port = 5101
+          foreach ($f in Get-ChildItem $desk -Filter 'KIT *.lnk') {
+            $l = $sh.CreateShortcut($f.FullName)
+            # The same command, without opening a browser, on a known port
+            $arg = $l.Arguments -replace '\(\)"$', "(port = $port, launch.browser = FALSE)`""
+            $p = Start-Process $l.TargetPath -ArgumentList $arg -PassThru
+            $ok = $false
+            foreach ($i in 1..60) {
+              try { if ((Invoke-WebRequest "http://127.0.0.1:$port/" -UseBasicParsing).StatusCode -eq 200) { $ok = $true; break } } catch {}
+              Start-Sleep 2
+            }
+            Stop-Process $p -Force -ErrorAction SilentlyContinue
+            if (-not $ok) { throw "$($f.Name) did not start" }
+            "$($f.Name): started on port $port"
+            $port++
+          }
