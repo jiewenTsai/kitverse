@@ -73,7 +73,10 @@ jobs:
           if ($links.Count -ne 3) { throw "expected 3 shortcuts on $desk" }
           $sh = New-Object -ComObject WScript.Shell
           foreach ($f in $links) {
-            $l = $sh.CreateShortcut($f.FullName)
+            # WScript.Shell cannot open a Chinese file name on an English Windows: read an ASCII copy
+            $copy = Join-Path $env:TEMP 'kit-check.lnk'
+            Copy-Item -LiteralPath $f.FullName -Destination $copy -Force
+            $l = $sh.CreateShortcut($copy)
             "$($f.Name): $($l.TargetPath) $($l.Arguments)"
             if ($l.TargetPath -ne $env:RSCRIPT) { throw "shortcut points at $($l.TargetPath)" }
           }
@@ -85,7 +88,9 @@ jobs:
           $desk = [Environment]::GetFolderPath('Desktop')
           $port = 5101
           foreach ($f in Get-ChildItem $desk -Filter 'KIT *.lnk') {
-            $l = $sh.CreateShortcut($f.FullName)
+            $copy = Join-Path $env:TEMP 'kit-check.lnk'
+            Copy-Item -LiteralPath $f.FullName -Destination $copy -Force
+            $l = $sh.CreateShortcut($copy)
             if ($l.Arguments -notmatch '::run_') { continue }   # the update shortcut
             # The same command, without opening a browser, on a known port
             $arg = $l.Arguments -replace '\(\)"$', "(port = $port, launch.browser = FALSE)`""
