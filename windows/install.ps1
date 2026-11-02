@@ -47,8 +47,10 @@
     }
     foreach ($root in "$env:ProgramFiles\R", "$env:LOCALAPPDATA\Programs\R") {
       if (Test-Path $root) {
+        # 只看 R-4.5.3 這種資料夾（同一層可能有 bin 之類的別的資料夾），新的版本先
         $dirs += Get-ChildItem $root -Directory |
-          Sort-Object { [version](($_.Name -replace '^R-', '') -replace '[^0-9.]', '') } -Descending |
+          Where-Object { $_.Name -match '^R-\d+\.\d+(\.\d+)?$' } |
+          Sort-Object { [version]($_.Name -replace '^R-', '') } -Descending |
           ForEach-Object { $_.FullName }
       }
     }
