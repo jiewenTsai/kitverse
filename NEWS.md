@@ -1,3 +1,9 @@
+# kitverse 0.5.6
+
+* Needs kits 0.26.0: its demo data `kitm03` now has the real M03 children's aggregates at 60 and 72
+  months (before, these two waves borrowed the M36 ones). `kitverse_check()` and the update shortcut
+  bring an older kits up to date.
+
 # kitverse 0.5.5
 
 * `kitverse_shortcuts()` works on a Windows whose system language is not Chinese: the shortcuts are saved
