@@ -1,3 +1,11 @@
+# kitverse 0.5.8
+
+* `kitverse_validation()` lists the validation reports of kitverse and its core packages, or opens
+  one (`kitverse_validation("kits")`, or `"criteria"` for the standard).
+* `inst/validation/`: the cross-package validation (metamorphic relations of kits, kitsUI and
+  kitJoin, the mutation runner and results, the fault history of the five packages).
+* Needs kits 0.26.1, kitsUI 0.8.8, kitJoin 0.10.2 and kitDesign 0.8.0.
+
 # kitverse 0.5.7
 
 * Needs kitsUI 0.8.7: the downloaded R code of a round gives the same result as the app when an
