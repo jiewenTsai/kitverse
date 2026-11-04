@@ -1,6 +1,7 @@
 # Metamorphic relations for the KIT R packages (kits, kitsUI, kitJoin)
 #
-# Rule: for each in-scope function, exactly THREE metamorphic relations: a transformation of the
+# Rule: for each in-scope function, THREE metamorphic relations (a fourth where an error type was left
+# uncovered: kitsui_score R4, interval): a transformation of the
 # input with a known effect on the output (no external oracle). Each relation is checked once on
 # fixed data: simulated data (kits::kits_sim with fixed seeds), the demo data kits::kitm03 /
 # kits::kitm36 (through kitsUI's kitsui_demo()), or small hand-made data frames.
@@ -28,7 +29,7 @@ grab <- function(pkg, names) {
 }
 grab("kitsUI", c("kitsui_demo", "kitsui_fixed_empty", "kitsui_round", "kitsui_cap",
                  "kitsui_category_problems", "kitsui_score", "kitsui_link_internal",
-                 "kitsui_persons"))
+                 "kitsui_link_D", "kitsui_persons"))
 grab("kitJoin", c("replace_na_codes", "join_waves", "build_attrition", "reshape_wider",
                   "reshape_longer", "wider_args", "longer_args", "stack_waves", "kits_build",
                   "kits_guess_map", "kits_candidate_cols", "kits_mapped_cols",
@@ -564,6 +565,32 @@ check("kitsUI", "kitsui_score", "R3",
              note = sprintf("zero visit ability %.3f; %d other visits with its pattern", zr$theta, nrow(same)))
       })
 
+# R4 is the interval relation (linking error into se_total), added in kitverse 0.5.8 because R1-R3 left the
+# interval error type of kitsui_score uncovered. Scenario: the snapshot scenario of kitsUI (lan and
+# motor, 3 to 48 months, both internal links and the D link, 2000 bootstrap draws).
+df_se <- kitsui_demo(waves = c(3, 6, 12, 36, 48))
+r_se <- suppressMessages(kitsui_round(df_se, kitsui_fixed_empty(), "1"))
+fx_se <- suppressMessages(kitsui_link_internal(r_se$fixed, "lan")$fixed)
+fx_se <- suppressMessages(kitsui_link_internal(fx_se, "motor")$fixed)
+fx_se <- suppressMessages(kitsui_link_D(fx_se)$fixed)
+check("kitsUI", "kitsui_score", "R4",
+      "On D, se_total^2 = d_score_se^2 + se_link^2 for every visit; within each calibrated scale se_link^2 is a quadratic in ability (the variance of a random affine map); a new bootstrap seed for the D link changes se_link but not d_score or d_score_se.",
+      "interval", 1e-8, {
+        s1 <- kitsui_score(fresh(r_se), df_se, fx_se)$scores
+        fx <- fx_se
+        fx$links$seed[fx$links$kind == "D"] <- fx$links$seed[fx$links$kind == "D"] + 1
+        s2 <- kitsui_score(fresh(r_se), df_se, fx)$scores
+        m <- match(paste(s1$visit_id, s1$bank), paste(s2$visit_id, s2$bank))   # a visit has a row per domain
+        quad <- max(vapply(split(s1, s1$bank), function(d)
+          max(abs(stats::resid(stats::lm(I(se_link^2) ~ ability + I(ability^2), d)))), numeric(1)))
+        same_link <- mad_(s1$se_link, s2$se_link[m]) < 1e-6
+        list(diff = max(mad_(s1$se_total^2, s1$d_score_se^2 + s1$se_link^2), quad,
+                        mad_(s1$d_score, s2$d_score[m]), mad_(s1$d_score_se, s2$d_score_se[m])) + same_link,
+             note = sprintf("%d visits on D; se_link %.2f to %.2f; new seed moves se_link by up to %.3f",
+                            sum(!is.na(s1$se_link)), min(s1$se_link, na.rm = TRUE),
+                            max(s1$se_link, na.rm = TRUE), mad_(s1$se_link, s2$se_link[m])))
+      })
+
 # =============================================================================================
 # kitJoin
 # =============================================================================================
@@ -648,19 +675,22 @@ check("kitJoin", "reshape_wider/longer", "R1",
         list(diff = mis_(back$id, a$id) + mis_(back$wave, a$wave) + mis_(back$score, a$score))
       })
 check("kitJoin", "reshape_wider/longer", "R2",
-      "Wide -> long -> wide returns the original wide table, also when the rows of the long table are shuffled.",
+      "Wide -> long -> wide returns the original cells (matched by column name) when the long rows are shuffled; with names_sort = TRUE also the original column order, and without it the new columns follow their first appearance in the long rows (the documented tidyr default).",
       "data_management", 0, {
+        # In kitJoin 0.10.1 this relation also asked for the column order without names_sort and
+        # failed; kitJoin 0.10.2 keeps the tidyr default, documents it and offers names_sort.
         wide0 <- arrange(reshape_wider(long0, wargs)$result, id)
         lg <- reshape_longer(wide0, largs())$result
-        wide1 <- arrange(reshape_wider(lg[sample(nrow(lg)), ], wargs)$result, id)
-        val <- sum(vapply(names(wide0), function(cl) mis_(wide1[[cl]], wide0[[cl]]), numeric(1)))
-        ord <- mis_(names(wide1), names(wide0))
-        list(diff = val + ord,
-             note = sprintf(paste0("cell values matched by column name: %d mismatches; column order %s vs %s ",
-                                   "(%d positions differ: pivot_wider orders new columns by first appearance ",
-                                   "in the long rows, names_sort = FALSE)"),
-                            as.integer(val), paste(names(wide1), collapse = ","), paste(names(wide0), collapse = ","),
-                            as.integer(ord)))
+        lg <- lg[sample(nrow(lg)), ]
+        wide1 <- arrange(reshape_wider(lg, wargs)$result, id)
+        wide2 <- arrange(reshape_wider(lg, modifyList(wargs, list(names_sort = TRUE)))$result, id)
+        val <- sum(vapply(names(wide0), function(cl) mis_(wide1[[cl]], wide0[[cl]]) + mis_(wide2[[cl]], wide0[[cl]]),
+                          numeric(1)))
+        sorted <- !identical(names(wide2), names(wide0))
+        first <- !identical(setdiff(names(wide1), "id"), unique(as.character(lg$wave)))
+        list(diff = val + sorted + first,
+             note = sprintf("column order without names_sort %s, with names_sort %s",
+                            paste(names(wide1), collapse = ","), paste(names(wide2), collapse = ",")))
       })
 check("kitJoin", "reshape_wider/longer", "R3",
       "A person with a missing wave (row removed) gets NA in that wide cell; wide -> long with values_drop_na returns exactly the non-missing rows.",
@@ -788,7 +818,7 @@ check("kitJoin", "kits_build", "R3",
 res <- do.call(rbind, results)
 write.csv(res, file.path(out_dir, "metamorphic_results.csv"), row.names = FALSE)
 total <- round(as.numeric(difftime(Sys.time(), t_start, units = "secs")), 1)
-cat(sprintf("\n%d functions x 3 relations = %d relations; %d PASS, %d FAIL; runtime %.1f s\n",
+cat(sprintf("\n%d functions, %d relations (3 each, 4 for kitsui_score); %d PASS, %d FAIL; runtime %.1f s\n",
             length(unique(paste(res$package, res$`function`))), nrow(res), sum(res$pass), sum(!res$pass), total))
 cat(sprintf("kits %s, kitsUI %s, kitJoin %s, R %s\n", packageVersion("kits"), packageVersion("kitsUI"),
             packageVersion("kitJoin"), getRversion()))

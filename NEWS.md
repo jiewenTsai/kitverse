@@ -4,6 +4,8 @@
   one (`kitverse_validation("kits")`, or `"criteria"` for the standard).
 * `inst/validation/`: the cross-package validation (metamorphic relations of kits, kitsUI and
   kitJoin, the mutation runner and results, the fault history of the five packages).
+  A fourth relation for `kitsui_score()` covers the linking error in `se_total`; the kitJoin
+  wide -> long -> wide relation now asks for the column order only with `names_sort = TRUE`.
 * Needs kits 0.26.1, kitsUI 0.8.8, kitJoin 0.10.2 and kitDesign 0.8.0.
 
 # kitverse 0.5.7
