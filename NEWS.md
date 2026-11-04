@@ -1,3 +1,9 @@
+# kitverse 0.5.7
+
+* Needs kitsUI 0.8.7: the downloaded R code of a round gives the same result as the app when an
+  item has a score category problem (before, `kits_item()` stopped there, e.g. with only M03 3 and
+  36 months picked). `kitverse_check()` and the update shortcut bring an older kitsUI up to date.
+
 # kitverse 0.5.6
 
 * Needs kits 0.26.0: its demo data `kitm03` now has the real M03 children's aggregates at 60 and 72
