@@ -1,3 +1,10 @@
+# kitverse 0.5.9
+
+* Needs kitJoin 0.11.0: a new page 「篩選與摘要」 (filter rows, pick columns, sort, group summary),
+  wide-to-long column names set by clicking instead of regular expressions, and SPSS measurement
+  levels (nominal, ordinal, scale) kept in downloaded SAV files. `kitverse_check()` and the update
+  shortcut bring an older kitJoin up to date.
+
 # kitverse 0.5.8
 
 * `kitverse_validation()` lists the validation reports of kitverse and its core packages, or opens
