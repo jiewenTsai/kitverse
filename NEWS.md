@@ -1,3 +1,15 @@
+# kitverse 0.6.1
+
+* The KIT release files are also on the branch `kit-release`, downloaded from
+  raw.githubusercontent.com first, with the GitHub release as the second address. On a Windows
+  computer R could not open the release downloads on github.com ("SSL connect error": github.com uses
+  a newer Sectigo root that R there did not know), while raw.githubusercontent.com worked.
+* Each file is downloaded first and tried in turn: the first address, again without the certificate
+  revocation check that some networks block (Windows), with Windows' own downloader, then the second
+  address. Before, one failed download only showed R's error and the old version stayed.
+* After installing from the release, the install line says plainly which KIT package is still not the
+  release's version and what to do (close every app window, paste the line again).
+
 # kitverse 0.6.0
 
 * **KIT release on GitHub** as a fallback for r-universe. `tools/release_bundle.R <tag>` builds the

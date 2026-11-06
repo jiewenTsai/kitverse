@@ -10,7 +10,7 @@ kitverse_release(url = ktv_bundle_url())
 \item{url}{Address (or file path) of the list.}
 }
 \value{
-A data frame: \code{pkg}, \code{version}, \code{url}, \code{needs} (the other packages it needs, as in
+A data frame: \code{pkg}, \code{version}, \code{url}, \code{mirror} (a second address), \code{needs} (the other packages it needs, as in
 DESCRIPTION), \code{tag}. \code{NULL} when the list cannot be read.
 }
 \description{

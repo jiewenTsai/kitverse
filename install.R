@@ -58,7 +58,7 @@ local({
   rel <- tryCatch({
     con <- if (grepl("^https?://", bundle)) url(bundle) else file(bundle)
     on.exit(close(con), add = TRUE)
-    read.dcf(con, fields = c("Package", "Version", "URL", "Needs", "Tag"))
+    read.dcf(con, fields = c("Package", "Version", "URL", "Mirror", "Needs", "Tag"))
   }, error = function(e) NULL, warning = function(w) NULL)
   rel_kv <- if (!is.null(rel) && "kitverse" %in% rel[, "Package"]) {
     rel[rel[, "Package"] == "kitverse", "Version"]
@@ -81,7 +81,45 @@ local({
       is.na(v) || (!is.na(mins[i]) && package_version(v) < package_version(mins[i]))
     }, logical(1))]
     if (length(todo) > 0) install.packages(todo, lib = lib, repos = repos)
-    for (u in rel[, "URL"]) install.packages(u, lib = lib, repos = NULL, type = "source")
+    # Download each file first, trying its addresses in turn. Some Windows computers cannot open
+    # github.com from R ("SSL connect error"); raw.githubusercontent.com (URL) usually works, and
+    # on Windows a retry skips the certificate revocation check that some networks block.
+    fetch <- function(urls, dest) {
+      urls <- urls[!is.na(urls) & nzchar(urls)]
+      tries <- list(list(), list(revoke = TRUE))
+      if (.Platform$OS.type == "windows") tries <- c(tries, list(list(method = "wininet")))
+      for (u in urls) for (t in tries) {
+        if (isTRUE(t$revoke)) Sys.setenv(R_LIBCURL_SSL_REVOKE_BEST_EFFORT = "TRUE")
+        ok <- tryCatch({
+          suppressWarnings(utils::download.file(u, dest, mode = "wb", quiet = TRUE,
+                                                method = if (is.null(t$method)) "libcurl" else t$method))
+          file.exists(dest) && file.size(dest) > 0
+        }, error = function(e) FALSE)
+        if (ok) return(TRUE)
+      }
+      FALSE
+    }
+    files <- character(0)
+    for (i in seq_len(nrow(rel))) {
+      dest <- file.path(tempdir(), basename(rel[i, "URL"]))
+      if (fetch(c(rel[i, "URL"], rel[i, "Mirror"]), dest)) {
+        files <- c(files, dest)
+      } else {
+        message("   \u2716 could not download ", rel[i, "Package"], " ", rel[i, "Version"])
+      }
+    }
+    if (length(files) > 0) install.packages(files, lib = lib, repos = NULL, type = "source")
+    # Say plainly when a package did not change (a download failed, or an app still had it open)
+    for (i in seq_len(nrow(rel))) {
+      path <- file.path(lib, rel[i, "Package"], "DESCRIPTION")
+      v <- if (file.exists(path)) read.dcf(path, "Version")[1, 1] else NA_character_
+      if (is.na(v) || package_version(v) < package_version(rel[i, "Version"])) {
+        message("   \u2716 ", rel[i, "Package"], " is ", if (is.na(v)) "not installed" else v,
+                ", the release has ", rel[i, "Version"], ". Close every KIT app window ",
+                "(the black windows) and paste the install line again; if it still fails, ",
+                "send a screenshot to the workshop assistants.")
+      }
+    }
   } else if (newer(latest, have)) {
     # Only when the repository has a newer kitverse (a newer one installed from GitHub stays)
     install.packages("kitverse", lib = lib, repos = repos)

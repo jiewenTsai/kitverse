@@ -5,8 +5,9 @@
 # Run it in the kitverse folder after the versions to ship are pushed to GitHub (main of each
 # repository). It needs git, the GitHub CLI (gh, logged in) and R. It
 # 1. clones main of kitDesign, kits, kitJoin, kitsUI and kitverse and builds each with R CMD build;
-# 2. creates the GitHub release <tag> of jiewenTsai/kitverse with the five tarballs;
-# 3. writes bundle/kit-bundle.dcf (package, version, download address, what it needs).
+# 2. creates the GitHub release <tag> of jiewenTsai/kitverse with the five tarballs, and puts the
+#    same files on the branch kit-release (raw.githubusercontent.com, which more computers reach);
+# 3. writes bundle/kit-bundle.dcf (package, version, download addresses, what it needs).
 # Then commit and push bundle/kit-bundle.dcf: from that moment install.R, kitverse_update() and
 # kitverse_check() use this release whenever r-universe is behind it.
 
@@ -53,8 +54,28 @@ notes <- paste0(
 run("gh", c("release", "create", tag, rel$file, "--repo", paste0(owner, "/kitverse"),
             "--title", shQuote(paste("KIT release", tag)), "--notes", shQuote(notes)))
 
+# The same files on the branch kit-release, served by raw.githubusercontent.com: some Windows
+# computers cannot open github.com's release downloads from R ("SSL connect error"; github.com uses a
+# newer Sectigo root those computers' R does not know), but they do reach raw.githubusercontent.com.
+# The branch keeps one commit with only the current files.
+branch_dir <- file.path(work, "kit-release-branch")
+unlink(branch_dir, recursive = TRUE)
+dir.create(branch_dir)
+file.copy(rel$file, branch_dir)
+writeLines(paste0("KIT release ", tag, ": ", paste(basename(rel$file), collapse = ", ")),
+           file.path(branch_dir, "README.md"))
+run("git", c("init", "--quiet", "-b", "kit-release"), wd = branch_dir)
+run("git", c("add", "."), wd = branch_dir)
+run("git", c("-c", "user.name=kitverse", "-c", "user.email=kitverse@users.noreply.github.com",
+             "commit", "--quiet", "-m", shQuote(paste("KIT release", tag))), wd = branch_dir)
+run("git", c("push", "--quiet", "--force", sprintf("https://github.com/%s/kitverse", owner),
+             "kit-release"), wd = branch_dir)
+rel$Mirror <- rel$URL
+rel$URL <- sprintf("https://raw.githubusercontent.com/%s/kitverse/kit-release/%s", owner,
+                   basename(rel$file))
+
 dir.create("bundle", showWarnings = FALSE)
-write.dcf(rel[, c("Tag", "Package", "Version", "URL", "Needs")], "bundle/kit-bundle.dcf",
+write.dcf(rel[, c("Tag", "Package", "Version", "URL", "Mirror", "Needs")], "bundle/kit-bundle.dcf",
           width = 1000)
 cat("Release ", tag, " created. Now commit and push bundle/kit-bundle.dcf:\n",
     "  git add bundle/kit-bundle.dcf && git commit -m 'KIT release ", tag, "' && git push\n", sep = "")

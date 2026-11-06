@@ -27,7 +27,7 @@ ktv_bundle_url <- function() {
 #' points somewhere else (for example a copy on a USB stick at the workshop).
 #'
 #' @param url Address (or file path) of the list.
-#' @return A data frame: `pkg`, `version`, `url`, `needs` (the other packages it needs, as in
+#' @return A data frame: `pkg`, `version`, `url`, `mirror` (a second address), `needs` (the other packages it needs, as in
 #'   DESCRIPTION), `tag`. `NULL` when the list cannot be read.
 #' @examples
 #' \donttest{kitverse_release()}
@@ -38,10 +38,11 @@ kitverse_release <- function(url = ktv_bundle_url()) {
   d <- tryCatch({
     con <- if (grepl("^https?://", url)) url(url) else file(url)
     on.exit(close(con), add = TRUE)
-    read.dcf(con, fields = c("Package", "Version", "URL", "Needs", "Tag"))
+    read.dcf(con, fields = c("Package", "Version", "URL", "Mirror", "Needs", "Tag"))
   }, error = function(e) NULL, warning = function(w) NULL)
   if (is.null(d) || nrow(d) == 0 || anyNA(d[, c("Package", "Version", "URL")])) return(NULL)
   data.frame(pkg = d[, "Package"], version = d[, "Version"], url = d[, "URL"],
+             mirror = ifelse(is.na(d[, "Mirror"]), "", d[, "Mirror"]),
              needs = ifelse(is.na(d[, "Needs"]), "", d[, "Needs"]),
              tag = ifelse(is.na(d[, "Tag"]), "", d[, "Tag"]), stringsAsFactors = FALSE)
 }
@@ -88,8 +89,33 @@ ktv_bundle_install <- function(pkgs, release, lib, cran, quiet = FALSE) {
     "}",
     "todo <- unique(needs$pkg[mapply(too_old, needs$pkg, needs$min)])",
     sprintf("if (length(todo) > 0) install.packages(todo, lib = lib, quiet = %s)", quiet),
-    sprintf("for (u in %s) install.packages(u, lib = lib, repos = NULL, type = 'source', quiet = %s)",
-            ktv_deparse(rel$url), quiet)
+    # Each file from its first address that works (see install.R: some Windows computers cannot
+    # open github.com from R, and some networks block the certificate revocation check)
+    "fetch <- function(urls, dest) {",
+    "  urls <- urls[!is.na(urls) & nzchar(urls)]",
+    "  tries <- list(list(), list(revoke = TRUE))",
+    "  if (.Platform$OS.type == 'windows') tries <- c(tries, list(list(method = 'wininet')))",
+    "  for (u in urls) for (t in tries) {",
+    "    if (isTRUE(t$revoke)) Sys.setenv(R_LIBCURL_SSL_REVOKE_BEST_EFFORT = 'TRUE')",
+    "    ok <- tryCatch({",
+    "      suppressWarnings(utils::download.file(u, dest, mode = 'wb', quiet = TRUE,",
+    "        method = if (is.null(t$method)) 'libcurl' else t$method))",
+    "      file.exists(dest) && file.size(dest) > 0",
+    "    }, error = function(e) FALSE)",
+    "    if (ok) return(TRUE)",
+    "  }",
+    "  FALSE",
+    "}",
+    sprintf("urls <- %s", ktv_deparse(rel$url)),
+    sprintf("mirrors <- %s", ktv_deparse(rel$mirror)),
+    "files <- character(0)",
+    "for (i in seq_along(urls)) {",
+    "  dest <- file.path(tempdir(), basename(urls[i]))",
+    "  if (fetch(c(urls[i], mirrors[i]), dest)) files <- c(files, dest)",
+    "  else message('could not download ', basename(urls[i]))",
+    "}",
+    sprintf("if (length(files) > 0) install.packages(files, lib = lib, repos = NULL, type = 'source', quiet = %s)",
+            quiet)
   ), script)
   status <- system2(ktv_rscript(), shQuote(script))
   if (!identical(status, 0L)) ktv_say("(the installer reported an error; checking again below)")
