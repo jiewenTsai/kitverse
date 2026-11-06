@@ -76,6 +76,9 @@ ktv_check_items <- function(req = kitverse_requirements()) {
              paste0(lib, ": not writable; kitverse::kitverse_update() creates a personal library"))
   }
 
+  # Whether the KIT packages are the current release (what the workshop slides show)
+  out[[length(out) + 1]] <- ktv_check_release(kitverse_release())
+
   bad <- req[!req$ok, , drop = FALSE]
   out[[length(out) + 1]] <- if (nrow(bad) == 0) {
     ktv_item("Package versions", "ok", paste0("all ", nrow(req), " packages installed and new enough"))
@@ -331,5 +334,26 @@ ktv_print_check <- function(res) {
   } else {
     cat(ktv_col("\u2716", "red"), " ", n_fail, " item", if (n_fail > 1) "s", " to fix (marked \u2716 above). ",
         "Please send a screenshot of this to the workshop assistants.\n\n", sep = "")
+  }
+}
+
+#' One check line: are the KIT packages the versions of the current KIT release?
+#' @noRd
+ktv_check_release <- function(release, lib.loc = NULL) {
+  if (is.null(release)) {
+    return(ktv_item("KIT release", "note", "the list of the current release could not be read (no internet?)"))
+  }
+  have <- vapply(release$pkg, ktv_installed_version, character(1), lib.loc = lib.loc)
+  shown <- paste0(release$pkg, " ", ifelse(is.na(have), "-", have))
+  behind <- ktv_behind_release(release, lib.loc)
+  tag <- if (nzchar(release$tag[1])) paste0(" (", release$tag[1], ")") else ""
+  if (length(behind) == 0) {
+    ktv_item("KIT release", "ok", paste0("current", tag, ": ", paste(shown, collapse = ", ")))
+  } else {
+    want <- paste0(release$pkg, " ", release$version)[release$pkg %in% behind]
+    ktv_item("KIT release", "note", paste0(
+      "older than the current release", tag, ": needs ", paste(want, collapse = ", "),
+      "; run kitverse::kitverse_update(all = TRUE) or paste the install line again"
+    ))
   }
 }

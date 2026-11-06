@@ -112,6 +112,22 @@ Windows) or Ctrl+C.
 `library(kitverse)` itself never fails because another package is broken: it tells you to run
 `kitverse_update()` instead.
 
+## Before a workshop: everyone gets the same versions
+
+The install line takes the KIT packages from r-universe, which rebuilds them after each push but can
+lag behind (once its own deploy step failed and it stopped updating for two days). So there is also a
+**KIT release**: one GitHub release of kitverse with the five KIT packages, listed in
+`bundle/kit-bundle.dcf`. The install line, `kitverse_update()` and `kitverse_check()` compare r-universe
+with it and take the KIT packages from the release whenever r-universe is behind. The KIT packages are
+plain R, so this needs no Rtools; their other packages still come pre-built from CRAN.
+
+1. **About a week before**: push the versions to ship, then in the kitverse folder
+   `Rscript tools/release_bundle.R kit-2026.12.01` and push `bundle/kit-bundle.dcf`.
+2. **Two days before**: `Rscript tools/check_versions.R`. One row per KIT package with the version on
+   GitHub, r-universe, the release and this computer; every row should say `ok`.
+3. **At the start**: everyone runs `kitverse::kitverse_check()`. The line "KIT release" says
+   `current (kit-2026.12.01)` or lists what is behind; put the tag on a slide.
+
 ## Offline install at the workshop
 
 Without internet, install from a repository on a USB drive:
@@ -130,6 +146,6 @@ source("D:/kitverse-repo/install.R")
 - Packages come from r-universe (<https://jiewentsai.r-universe.dev>): a CRAN-like repository with
   pre-built Windows and macOS packages that does not go through the GitHub API (with 80 people in one room,
   `remotes::install_github()` runs into GitHub's limit of 60 requests per hour).
-- `Remotes:` must point at the same kitDesign tag as kitsUI and kitJoin (now `jiewenTsai/kitDesign@v0.7.1`);
+- `Remotes:` must point at the same kitDesign tag as kitsUI and kitJoin (now `jiewenTsai/kitDesign@v0.8.0`);
   two different refs for one package make pak stop with "dependency conflict".
 - R code must be ASCII: write symbols such as ✔ as `"\u2714"`.

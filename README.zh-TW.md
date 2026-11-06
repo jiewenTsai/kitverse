@@ -104,6 +104,14 @@ run_kitjoin()       # 資料處理工具（kitJoin 的函式）
 
 `library(kitverse)` 本身不會因為別的套件壞掉而失敗：套件有問題時它會說要執行 `kitverse_update()`。
 
+## 工作坊前：確保每個人都是同樣的版本
+
+安裝指令從 r-universe 拿 KIT 的套件。r-universe 在每次推上 GitHub 後會重建，但可能落後（曾經它自己的發布步驟出錯，兩天沒有更新）。所以另外有一個 **KIT release**：kitverse 的一個 GitHub release，放五個 KIT 套件，清單在 `bundle/kit-bundle.dcf`。安裝指令、`kitverse_update()` 與 `kitverse_check()` 會拿 r-universe 和它比；r-universe 落後時，KIT 的套件改從 release 裝。KIT 的套件都是純 R，不需要 Rtools；它們用到的其他套件照樣從 CRAN 裝預先建好的版本。
+
+1. **大約一週前**：把要用的版本推上 GitHub，在 kitverse 資料夾執行 `Rscript tools/release_bundle.R kit-2026.12.01`，再推 `bundle/kit-bundle.dcf`。
+2. **兩天前**：執行 `Rscript tools/check_versions.R`。每個 KIT 套件一列，列出 GitHub、r-universe、release 與這台電腦的版本；每一列都要是 `ok`。
+3. **現場一開始**：每個人跑 `kitverse::kitverse_check()`。「KIT release」那一行會寫 `current (kit-2026.12.01)`，或列出哪些落後；投影片上放這個標籤。
+
 ## 工作坊現場的離線安裝
 
 沒有網路時，從 USB 的套件庫安裝：
@@ -120,6 +128,6 @@ source("D:/kitverse-repo/install.R")
   會有一個 NOTE「Namespaces in Imports field not imported from」：這是故意的。Imports 只是讓這些套件被裝好。
 - 套件從 r-universe（<https://jiewentsai.r-universe.dev>）裝：像 CRAN 一樣的套件庫，有 Windows、macOS 編好的
   版本，而且不經過 GitHub API（80 人在同一個會場用 `remotes::install_github()` 時，GitHub 每小時 60 次的限制會被用完）。
-- `Remotes:` 的 kitDesign 要和 kitsUI、kitJoin 指向同一個 tag（現在是 `jiewenTsai/kitDesign@v0.7.1`）：
+- `Remotes:` 的 kitDesign 要和 kitsUI、kitJoin 指向同一個 tag（現在是 `jiewenTsai/kitDesign@v0.8.0`）：
   同一個套件有兩個不同的來源時，pak 會停在「dependency conflict」。
 - R 程式碼只能用 ASCII：✔ 這類符號要寫成 `"\u2714"`。

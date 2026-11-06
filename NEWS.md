@@ -1,3 +1,20 @@
+# kitverse 0.6.0
+
+* **KIT release on GitHub** as a fallback for r-universe. `tools/release_bundle.R <tag>` builds the
+  five KIT packages, puts them in one GitHub release of kitverse and lists them in
+  `bundle/kit-bundle.dcf`. The install line (`install.R`, also behind the Windows one-liner),
+  `kitverse_update()` and `kitverse_check()` read that list: when r-universe has an older version of a
+  KIT package (or none), it is installed from the release instead. The KIT packages are plain R, so
+  Windows and macOS need no Rtools or Xcode; the packages they need still come pre-built from CRAN.
+  Found when r-universe stopped updating on 2026-11-04 (its own deploy step failed) and the Windows
+  installer kept giving kitJoin 0.10.2.
+* New `kitverse_release()` reads the list. `kitverse_check()` has a line "KIT release": current, or
+  which packages are behind. `kitverse_update(all = TRUE)` also brings KIT packages up to the release.
+* `tools/check_versions.R`: before a workshop, the version of each KIT package on GitHub, r-universe,
+  the release and this computer, side by side.
+* `KITVERSE_BUNDLE` (install line) and `options(kitverse.bundle = )` point to another copy of the list,
+  for example on the workshop USB drive.
+
 # kitverse 0.5.9
 
 * Needs kitJoin 0.11.0: a new page 「篩選與摘要」 (filter rows, pick columns, sort, group summary),

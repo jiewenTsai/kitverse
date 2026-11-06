@@ -28,21 +28,32 @@
 kitverse_update <- function(all = FALSE, rounds = 4, quiet = FALSE) {
   lib <- ktv_user_library()
   repos <- kitverse_repos()
+  release <- kitverse_release()
   done <- character(0)
   for (i in seq_len(rounds)) {
     req <- kitverse_requirements()
     todo <- req$pkg[!req$ok]
     if (all && i == 1) {
-      # Packages with a newer version in the repositories (kitverse itself too)
+      # Packages with a newer version in the repositories (kitverse itself too), and KIT packages
+      # older than the KIT release on GitHub
       old <- tryCatch(rownames(utils::old.packages(repos = repos)), error = function(e) NULL)
       todo <- union(todo, intersect(old, c(req$pkg, "kitverse")))
+      todo <- union(todo, ktv_behind_release(release))
     }
     todo <- setdiff(todo, done)
     if (length(todo) == 0) break
     ktv_say("Installing or updating ", length(todo), " package", if (length(todo) > 1) "s",
             ": ", paste(todo, collapse = ", "))
     ktv_say("(the first time can take a few minutes; please keep R open)")
-    ktv_install(todo, lib = lib, repos = repos, quiet = quiet)
+    # KIT packages that r-universe does not have yet in the release's version: from GitHub
+    from_github <- ktv_bundle_needed(release, repos, intersect(todo, KTV_KIT_PKGS))
+    if (length(from_github) > 0) {
+      ktv_say("r-universe is behind; installing from the KIT release on GitHub: ",
+              paste(from_github, collapse = ", "))
+      ktv_bundle_install(from_github, release, lib = lib, cran = repos[["CRAN"]], quiet = quiet)
+    }
+    rest <- setdiff(todo, from_github)
+    if (length(rest) > 0) ktv_install(rest, lib = lib, repos = repos, quiet = quiet)
     done <- c(done, todo)
   }
   req <- kitverse_requirements()
@@ -128,3 +139,14 @@ ktv_rscript <- function() {
 #' Print one line (message(), so suppressMessages() can hide it)
 #' @noRd
 ktv_say <- function(...) message(paste0(...))
+
+#' KIT packages installed in a version older than the KIT release (or not installed)
+#' @noRd
+ktv_behind_release <- function(release, lib.loc = NULL) {
+  if (is.null(release)) return(character(0))
+  behind <- vapply(seq_len(nrow(release)), function(i) {
+    have <- ktv_installed_version(release$pkg[i], lib.loc)
+    is.na(have) || utils::compareVersion(have, release$version[i]) < 0
+  }, logical(1))
+  release$pkg[behind]
+}
