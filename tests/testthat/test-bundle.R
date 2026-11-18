@@ -29,7 +29,8 @@ test_that("only KIT packages the repository has in an older version come from th
   dir.create(contrib, recursive = TRUE)
   write.dcf(data.frame(Package = c("kitDesign", "kits"), Version = c("0.8.0", "0.26.0")),
             file.path(contrib, "PACKAGES"))
-  repos <- c(kitverse = paste0("file://", repo))
+  # file:///C:/... on Windows (file://C:/... cannot be read), file:///tmp/... elsewhere
+  repos <- c(kitverse = paste0("file:///", sub("^/", "", normalizePath(repo, winslash = "/"))))
   # kits is behind (0.26.0 < 0.26.1), kitJoin is missing; kitDesign is current
   expect_equal(ktv_bundle_needed(rel, repos), c("kits", "kitJoin"))
   expect_equal(ktv_bundle_needed(rel, repos, "kitDesign"), character(0))
