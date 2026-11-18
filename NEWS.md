@@ -1,3 +1,9 @@
+# kitverse 0.6.2
+
+* Needs kitJoin 0.11.2: adding many large files is faster (10 files of 6,000 rows × 600 columns:
+  about 24 s → 17 s for SAV, 35 s → 18 s for CSV on a test computer) and shows a progress bar.
+  `kitverse_check()` and the update shortcut bring an older kitJoin up to date.
+
 # kitverse 0.6.1
 
 * The KIT release files are also on the branch `kit-release`, downloaded from
